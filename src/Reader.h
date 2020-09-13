@@ -2,8 +2,8 @@
 // Created by Ivan Kishchenko on 05.09.2020.
 //
 
-#ifndef MQTT_DECODER_H
-#define MQTT_DECODER_H
+#ifndef MQTT_READER_H
+#define MQTT_READER_H
 
 #include <istream>
 #include <boost/endian.hpp>
@@ -12,7 +12,7 @@
 
 namespace mqtt {
 
-    class Decoder {
+    class Reader {
     private:
         template<typename T>
         T readNumber(std::istream &inc) {
@@ -86,4 +86,4 @@ namespace mqtt {
 
 }
 
-#endif //MQTT_DECODER_H
+#endif //MQTT_READER_H

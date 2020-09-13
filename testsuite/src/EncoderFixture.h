@@ -9,7 +9,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "Encoder.h"
+#include "Writer.h"
 
 class EncoderFixture {
 public:

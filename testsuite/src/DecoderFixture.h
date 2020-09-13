@@ -6,7 +6,7 @@
 #define MQTT_DECODERFIXTURE_H
 
 #include <boost/test/unit_test.hpp>
-#include "Decoder.h"
+#include "Reader.h"
 
 class DecoderFixture {
 public:

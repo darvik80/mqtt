@@ -3,7 +3,7 @@ project(mqtt_testsuite VERSION 1.0)
 
 file(GLOB TEST_SRCS
         src/*.cpp
-        ../src/Encoder.h
+        ../src/Writer.h
 )
 
 include_directories(
