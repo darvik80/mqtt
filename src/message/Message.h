@@ -13,6 +13,7 @@ namespace mqtt::message {
     class Message {
     public:
         typedef std::shared_ptr<Message> MessagePtr;
+        typedef std::unique_ptr<Message> MessageAutoPtr;
 
     private:
         Header _header{};
@@ -20,6 +21,10 @@ namespace mqtt::message {
         [[nodiscard]] virtual int getType() const = 0;
 
         [[nodiscard]] const Header &getHeader() const;
+
+        void setHeader(uint8_t header);
+
+        virtual ~Message() = default;
     };
 
 }

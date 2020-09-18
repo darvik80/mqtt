@@ -17,7 +17,7 @@ namespace mqtt::message {
             return MQTT_MSG_PUBCOMP;
         }
 
-        uint16_t getPacketIdentifier() const;
+        [[nodiscard]] uint16_t getPacketIdentifier() const;
 
         void setPacketIdentifier(uint16_t packetIdentifier);
     };

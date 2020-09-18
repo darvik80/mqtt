@@ -10,16 +10,8 @@ namespace mqtt::message {
         return _topicFilter;
     }
 
-    void SubscribePayload::setTopicFilter(const std::string &topicFilter) {
-        _topicFilter = topicFilter;
-    }
-
     uint8_t SubscribePayload::getQos() const {
         return _requestedQos.all;
-    }
-
-    void SubscribePayload::setQos(uint8_t qos) {
-        _requestedQos.all = qos;
     }
 
     SubscribePayload::SubscribePayload(const std::string &topicFilter, uint8_t qos)
@@ -40,11 +32,7 @@ namespace mqtt::message {
         return _topics;
     }
 
-    void SubscribeMessage::setTopics(const std::vector<SubscribePayload> &topics) {
-        _topics = topics;
-    }
-
     void SubscribeMessage::addTopic(const std::string &topicFilter, uint8_t qos) {
-        _topics.emplace_back(topicFilter, qos)
+        _topics.emplace_back(topicFilter, qos);
     }
 }

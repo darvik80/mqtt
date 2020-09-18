@@ -7,8 +7,6 @@
 
 #include <cstdint>
 
-#define MQTT_INVALID_PROPERTY_ID -2
-
 namespace mqtt {
 
 /** The one byte MQTT V5 property indicator */

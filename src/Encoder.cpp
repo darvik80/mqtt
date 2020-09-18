@@ -6,11 +6,11 @@
 #include "Writer.h"
 
 namespace mqtt {
-    void Encoder::encode(boost::asio::streambuf &buf, function::Supplier<message::Message::MessagePtr> &consumer) {
+    void Encoder::encode(boost::asio::streambuf &buf, std::unique_ptr<message::Message> (*supplier)()) {
         boost::asio::streambuf data;
         std::ostream body(&data);
 
-        auto msg = consumer.get();
+        auto msg = supplier();
 
         int dataSize = 0;
         switch (msg->getType()) {
@@ -38,8 +38,26 @@ namespace mqtt {
             case MQTT_MSG_SUBSCRIBE:
                 encodeSubscribe(body, *(dynamic_cast<message::SubscribeMessage*>(msg.get())));
                 break;
-            default:
+            case MQTT_MSG_SUBACK:
+                encodeSubAck(body, *(dynamic_cast<message::SubAckMessage*>(msg.get())));
                 break;
+            case MQTT_MSG_UNSUBSCRIBE:
+                encodeUnSubscribe(body, *(dynamic_cast<message::UnSubscribeMessage*>(msg.get())));
+                break;
+            case MQTT_MSG_UNSUBACK:
+                encodeUnSubAck(body, *(dynamic_cast<message::UnSubAckMessage*>(msg.get())));
+                break;
+            case MQTT_MSG_PINGREQ:
+                encodePingReq(body, *(dynamic_cast<message::PingReqMessage*>(msg.get())));
+                break;
+            case MQTT_MSG_PINGRESP:
+                encodePingResp(body, *(dynamic_cast<message::PingRespMessage*>(msg.get())));
+                break;
+            case MQTT_MSG_DISCONNECT:
+                encodeDisconnect(body, *(dynamic_cast<message::DisconnectMessage*>(msg.get())));
+                break;
+            default:
+                throw;
 
         }
 
@@ -57,18 +75,35 @@ namespace mqtt {
 
         /// 3.1.2 Variable header
         /// 3.1.2.1 Protocol name
-        res += writer.writeString("MQIsdp", out);
+        res += writer.writeString(message.getProtocolName(), out);
         /// 3.1.2.2 Protocol version
-        res += writer.writeUint8((uint8_t) 3, out);
+        res += writer.writeUint8(message.getProtocolLevel(), out);
         /// 3.1.2.2 Protocol flags
         res += writer.writeUint8(message.getFlags().all, out);
         // ...
         /// 3.1.2.10 Keep alive
-        res += writer.writeUint16((uint16_t) 10, out);
+        res += writer.writeUint16(message.getKeepAlive(), out);
 
         /// 3.1.3 Payload
         /// 3.1.3.1 Client Id
         res += writer.writeString(message.getClientId(), out);
+
+        if (message.getFlags().bits.willFlag) {
+            /// 3.1.3.2 Will Topic
+            res += writer.writeString(message.getWillTopic(), out);
+            /// 3.1.3.3 Will Message
+            res += writer.writeString(message.getWillMessage(), out);
+        }
+
+        if (message.getFlags().bits.username) {
+            /// 3.1.3.4 User Name
+            res += writer.writeString(message.getUserName(), out);
+        }
+
+        if (message.getFlags().bits.password) {
+            /// 3.1.3.5 Password
+            res += writer.writeString(message.getPassword(), out);
+        }
 
         return res;
     }
@@ -155,6 +190,55 @@ namespace mqtt {
         }
 
         return res;
+    }
+
+    int Encoder::encodeSubAck(std::ostream &out, const message::SubAckMessage &message) {
+        Writer writer;
+
+        size_t res = 0;
+        /// 3.9.2 Variable header
+        res += writer.writeUint16(message.getPacketIdentifier(), out);
+        /// 3.9.3 Payload
+        res += writer.writeUint16(message.getPacketIdentifier(), out);
+
+        return res;
+    }
+
+    int Encoder::encodeUnSubscribe(std::ostream &out, const message::UnSubscribeMessage &message) {
+        Writer writer;
+
+        size_t res = 0;
+        /// 3.10.2 Variable header
+        res += writer.writeUint16(message.getPacketIdentifier(), out);
+        /// 3.10.3.1 Payload non normative example
+        for (auto &topicFilter : message.getTopicFilters()) {
+            res += writer.writeString(topicFilter, out);
+        }
+
+        return res;
+    }
+
+    int Encoder::encodeUnSubAck(std::ostream &out, const message::UnSubAckMessage &message) {
+        Writer writer;
+
+        size_t res = 0;
+        /// 3.11.2 Variable header
+        res += writer.writeUint16(message.getPacketIdentifier(), out);
+
+        return res;
+
+    }
+
+    int Encoder::encodePingReq(std::ostream &out, const message::PingReqMessage &message) {
+        return 0;
+    }
+
+    int Encoder::encodePingResp(std::ostream &out, const message::PingRespMessage &message) {
+        return 0;
+    }
+
+    int Encoder::encodeDisconnect(std::ostream &out, const message::DisconnectMessage &message) {
+        return 0;
     }
 
 }

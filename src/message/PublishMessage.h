@@ -18,6 +18,7 @@ namespace mqtt::message {
         uint16_t _packetIdentifier;
     public:
         PublishMessage(const std::string &topic, uint16_t packetIdentifier);
+
         PublishMessage();
 
         [[nodiscard]] int getType() const override {
@@ -28,7 +29,7 @@ namespace mqtt::message {
 
         void setTopic(const std::string &topic);
 
-        [[maybe_unused]] uint16_t getPacketIdentifier() const;
+        [[nodiscard]] uint16_t getPacketIdentifier() const;
 
         void setPacketIdentifier(uint16_t packetIdentifier);
     };

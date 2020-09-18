@@ -26,11 +26,7 @@ namespace mqtt::message {
 
         [[nodiscard]] const std::string &getTopicFilter() const;
 
-        void setTopicFilter(const std::string &topicFilter);
-
         [[nodiscard]] uint8_t getQos() const;
-
-        void setQos(uint8_t qos);
     };
 
     class SubscribeMessage : public Message {
@@ -49,8 +45,6 @@ namespace mqtt::message {
 
         [[nodiscard]] const std::vector<SubscribePayload> &getTopics() const;
 
-
-        void setTopics(const std::vector<SubscribePayload> &topics);
 
         void addTopic(const std::string &topicFilter, uint8_t qos);
     };

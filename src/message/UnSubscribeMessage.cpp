@@ -14,12 +14,8 @@ namespace mqtt::message {
         _packetIdentifier = packetIdentifier;
     }
 
-    const std::list<std::string> &UnSubscribeMessage::getTopicFilters() const {
+    const std::vector<std::string> &UnSubscribeMessage::getTopicFilters() const {
         return _topicFilters;
-    }
-
-    void UnSubscribeMessage::setTopicFilters(const std::list<std::string> &topicFilter) {
-        _topicFilters = topicFilter;
     }
 
     void UnSubscribeMessage::addTopicFilter(const std::string &topicFilter) {

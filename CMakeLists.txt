@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB SRCS_G
         src/*.cpp
+        src/message/*.cpp
+        src/function/*.cpp
         )
 
 include_directories(

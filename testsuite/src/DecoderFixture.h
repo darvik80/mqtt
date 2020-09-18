@@ -1,16 +1,17 @@
 //
-// Created by Ivan Kishchenko on 05.09.2020.
+// Created by Kishchenko, Ivan on 9/16/20.
 //
 
 #ifndef MQTT_DECODERFIXTURE_H
 #define MQTT_DECODERFIXTURE_H
 
+#include "Decoder.h"
 #include <boost/test/unit_test.hpp>
-#include "Reader.h"
+
 
 class DecoderFixture {
 public:
-    Decoder _decoder;
+    mqtt::Decoder decoder;
 };
 
 

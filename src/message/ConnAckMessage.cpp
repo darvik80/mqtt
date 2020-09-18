@@ -21,6 +21,5 @@ namespace mqtt::message {
     void ConnAckMessage::setFlags(uint8_t flags) {
         _flags.all = flags;
     }
-}
 
 }

@@ -1,20 +1,16 @@
 //
-// Created by Ivan Kishchenko on 05.09.2020.
+// Created by Kishchenko, Ivan on 9/16/20.
 //
 
-#ifndef MQTT_ENCODERTEST_H
-#define MQTT_ENCODERTEST_H
+#ifndef MQTT_ENCODERFIXTURE_H
+#define MQTT_ENCODERFIXTURE_H
 
-#define BOOST_TEST_MODULE Mqtt
-
+#include "Encoder.h"
 #include <boost/test/unit_test.hpp>
 
-#include "Writer.h"
-
 class EncoderFixture {
-public:
-    Encoder _encoder;
+    mqtt::Encoder encoder;
 };
 
 
-#endif //MQTT_ENCODERTEST_H
+#endif //MQTT_ENCODERFIXTURE_H

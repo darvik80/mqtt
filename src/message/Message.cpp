@@ -9,4 +9,8 @@ namespace mqtt::message {
         return _header;
     }
 
+    void Message::setHeader(uint8_t header) {
+        _header.all = header;
+    }
+
 }

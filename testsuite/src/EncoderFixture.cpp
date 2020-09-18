@@ -1,90 +1,21 @@
 //
-// Created by Ivan Kishchenko on 05.09.2020.
+// Created by Kishchenko, Ivan on 9/16/20.
 //
 
 #include "EncoderFixture.h"
 
-#include <boost/asio.hpp>
-
 BOOST_FIXTURE_TEST_SUITE(EncoderTest, EncoderFixture)
 
-    BOOST_AUTO_TEST_CASE(writeUint8) {
-        boost::asio::streambuf buf;
-        std::ostream out(&buf);
+    BOOST_AUTO_TEST_CASE(encodeConnect) {
+        char packet [] = { /* Packet 8 */
+                0x10, 0x25, 0x00, 0x06, 0x4d, 0x51, 0x49, 0x73,
+                0x64, 0x70, 0x03, 0x02, 0x00, 0x05, 0x00, 0x17,
+                0x70, 0x61, 0x68, 0x6f, 0x2f, 0x44, 0x44, 0x45,
+                0x34, 0x44, 0x44, 0x41, 0x46, 0x34, 0x31, 0x30,
+                0x38, 0x44, 0x33, 0x45, 0x33, 0x36, 0x33 };
 
-        uint8_t val = 0x15;
-        _encoder.writeUint8(val, out);
 
-        BOOST_REQUIRE_EQUAL(1, buf.size());
-        BOOST_REQUIRE_EQUAL(val, buf.sgetc());
-    }
 
-    BOOST_AUTO_TEST_CASE(writeUint16) {
-        boost::asio::streambuf buf;
-        std::ostream out(&buf);
-
-        uint16_t val = 0x1551;
-        _encoder.writeUint16(val, out);
-
-        BOOST_REQUIRE_EQUAL(2, buf.size());
-        BOOST_REQUIRE_EQUAL(0x15, buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL(0x51, buf.sgetc());
-    }
-
-    BOOST_AUTO_TEST_CASE(writeUint32) {
-        boost::asio::streambuf buf;
-        std::ostream out(&buf);
-
-        uint32_t val = 0x15517ff7;
-        _encoder.writeUint32(val, out);
-
-        BOOST_REQUIRE_EQUAL(4, buf.size());
-        BOOST_REQUIRE_EQUAL(0x15, buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL(0x51, buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL(0x7f, buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL(0xf7, buf.sgetc());
-    }
-
-    BOOST_AUTO_TEST_CASE(writeVariableInt) {
-        boost::asio::streambuf buf;
-        std::ostream out(&buf);
-
-        int val = 0x00123456;
-        _encoder.writeVariableInt(val, out);
-
-        BOOST_REQUIRE_EQUAL(3, buf.size());
-        BOOST_REQUIRE_EQUAL(0xd6, buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL(0xe8, buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL(0x48, buf.sgetc());
-    }
-
-    BOOST_AUTO_TEST_CASE(writeString) {
-        boost::asio::streambuf buf;
-        std::ostream out(&buf);
-
-        std::string str = "Hello";
-        _encoder.writeString(str, out);
-
-        BOOST_REQUIRE_EQUAL(2 + str.size(), buf.size());
-        BOOST_REQUIRE_EQUAL(0x00, buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL(0x05, buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL('H', buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL('e', buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL('l', buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL('l', buf.sgetc());
-        buf.snextc();
-        BOOST_REQUIRE_EQUAL('o', buf.sgetc());
     }
 
 BOOST_AUTO_TEST_SUITE_END()

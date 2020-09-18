@@ -12,18 +12,56 @@ namespace mqtt::message {
 
     class ConnectMessage : public Message {
     private:
-        std::string _clientId;
+        std::string _protocolName{"MQTT"};
+        uint8_t _protocolLevel{3};
         Flags _flags{};
+        std::string _clientId{"MQIsdp"};
+        uint16_t _keepAlive{10};
+
+        // connection data
+        std::string _willTopic;
+        std::string _willMessage;
+
+        std::string _userName;
+        std::string _password;
     public:
         [[nodiscard]] int getType() const override {
             return MQTT_MSG_CONNECT;
         }
 
+        [[nodiscard]] const std::string &getProtocolName() const;
+
+        void setProtocolName(const std::string &protocolName);
+
+        [[nodiscard]] uint8_t getProtocolLevel() const;
+
+        void setProtocolLevel(uint8_t protocolLevel);
+
+        [[nodiscard]] const std::string &getWillTopic() const;
+
+        void setWillTopic(const std::string &willTopic);
+
+        [[nodiscard]] const std::string &getWillMessage() const;
+
+        void setWillMessage(const std::string &willMessage);
+
+        [[nodiscard]] const std::string &getUserName() const;
+
+        void setUserName(const std::string &userName);
+
+        [[nodiscard]] const std::string &getPassword() const;
+
+        void setPassword(const std::string &password);
+
         [[nodiscard]] const Flags &getFlags() const;
-        void setFlags(const Flags &flags);
+        void setFlags(uint8_t flags);
 
         [[nodiscard]] const std::string &getClientId() const;
         void setClientId(const std::string &clientId);
+
+        [[nodiscard]] uint16_t getKeepAlive() const;
+
+        void setKeepAlive(uint16_t keepAlive);
     };
 }
 

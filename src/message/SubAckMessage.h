@@ -18,15 +18,14 @@ namespace mqtt::message {
             return MQTT_MSG_SUBACK;
         }
 
-        uint16_t getPacketIdentifier() const;
+        [[nodiscard]] uint16_t getPacketIdentifier() const;
 
         void setPacketIdentifier(uint16_t packetIdentifier);
 
-        uint8_t getReturnCode() const;
+        [[nodiscard]] uint8_t getReturnCode() const;
 
         void setReturnCode(uint8_t returnCode);
     };
-
 }
 
 #endif //MQTT_SUBACKMESSAGE_H

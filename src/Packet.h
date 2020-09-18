@@ -48,8 +48,8 @@ namespace mqtt {
             struct {
                 union {
                     int : 1;                    /**< unused */
-                    bool cleanStart: 1;        /**< cleansession flag */
-                    bool will: 1;              /**< will flag */
+                    bool cleanSession: 1;        /**< cleansession flag */
+                    bool willFlag: 1;              /**< will flag */
                     unsigned int willQoS: 2;   /**< will QoS value */
                     bool willRetain: 1;        /**< will retain setting */
                     bool password: 1;          /**< 3.1 password */

@@ -10,8 +10,9 @@ namespace mqtt::message {
         return _flags;
     }
 
-    void ConnectMessage::setFlags(const mqtt::Flags &flags) {
-        _flags = flags;
+
+    void ConnectMessage::setFlags(uint8_t flags) {
+        _flags.all = flags;
     }
 
     const std::string &ConnectMessage::getClientId() const {
@@ -21,4 +22,61 @@ namespace mqtt::message {
     void ConnectMessage::setClientId(const std::string &clientId) {
         _clientId = clientId;
     }
+
+    uint16_t ConnectMessage::getKeepAlive() const {
+        return _keepAlive;
+    }
+
+    void ConnectMessage::setKeepAlive(uint16_t keepAlive) {
+        _keepAlive = keepAlive;
+    }
+
+    const std::string &ConnectMessage::getProtocolName() const {
+        return _protocolName;
+    }
+
+    void ConnectMessage::setProtocolName(const std::string &protocolName) {
+        _protocolName = protocolName;
+    }
+
+    uint8_t ConnectMessage::getProtocolLevel() const {
+        return _protocolLevel;
+    }
+
+    void ConnectMessage::setProtocolLevel(uint8_t protocolLevel) {
+        _protocolLevel = protocolLevel;
+    }
+
+    const std::string &ConnectMessage::getWillTopic() const {
+        return _willTopic;
+    }
+
+    void ConnectMessage::setWillTopic(const std::string &willTopic) {
+        _willTopic = willTopic;
+    }
+
+    const std::string &ConnectMessage::getWillMessage() const {
+        return _willMessage;
+    }
+
+    void ConnectMessage::setWillMessage(const std::string &willMessage) {
+        _willMessage = willMessage;
+    }
+
+    const std::string &ConnectMessage::getUserName() const {
+        return _userName;
+    }
+
+    void ConnectMessage::setUserName(const std::string &userName) {
+        _userName = userName;
+    }
+
+    const std::string &ConnectMessage::getPassword() const {
+        return _password;
+    }
+
+    void ConnectMessage::setPassword(const std::string &password) {
+        _password = password;
+    }
+
 }

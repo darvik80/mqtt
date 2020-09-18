@@ -5,7 +5,8 @@
 #ifndef MQTT_UNSUBSCRIBEMESSAGE_H
 #define MQTT_UNSUBSCRIBEMESSAGE_H
 
-#include <list>
+#include <vector>
+#include <string>
 #include "Message.h"
 
 namespace mqtt::message {
@@ -13,7 +14,7 @@ namespace mqtt::message {
     class UnSubscribeMessage : public Message {
     private:
         uint16_t _packetIdentifier;
-        std::list<std::string> _topicFilters;
+        std::vector<std::string> _topicFilters;
     public:
         [[nodiscard]] int getType() const override {
             return MQTT_MSG_UNSUBSCRIBE;
@@ -23,9 +24,7 @@ namespace mqtt::message {
 
         void setPacketIdentifier(uint16_t packetIdentifier);
 
-        [[nodiscard]] const std::list<std::string> &getTopicFilters() const;
-
-        void setTopicFilters(const std::list<std::string> &topicFilter);
+        [[nodiscard]] const std::vector<std::string> &getTopicFilters() const;
 
         void addTopicFilter(const std::string& topicFilter);
     };
