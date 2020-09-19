@@ -15,46 +15,46 @@ namespace mqtt {
         int dataSize = 0;
         switch (msg->getType()) {
             case MQTT_MSG_CONNECT:
-                encodeConnect(body, *(dynamic_cast<message::ConnectMessage*>(msg.get())));
+                dataSize = encodeConnect(body, *(dynamic_cast<message::ConnectMessage*>(msg.get())));
                 break;
             case MQTT_MSG_CONNACK:
-                encodeConnAck(body, *(dynamic_cast<message::ConnAckMessage*>(msg.get())));
+                dataSize = encodeConnAck(body, *(dynamic_cast<message::ConnAckMessage*>(msg.get())));
                 break;
             case MQTT_MSG_PUBLISH:
-                encodePublish(body, *(dynamic_cast<message::PublishMessage*>(msg.get())));
+                dataSize = encodePublish(body, *(dynamic_cast<message::PublishMessage*>(msg.get())));
                 break;
             case MQTT_MSG_PUBACK:
-                encodePubAck(body, *(dynamic_cast<message::PubAckMessage*>(msg.get())));
+                dataSize = encodePubAck(body, *(dynamic_cast<message::PubAckMessage*>(msg.get())));
                 break;
             case MQTT_MSG_PUBREC:
-                encodePubRec(body, *(dynamic_cast<message::PubRecMessage*>(msg.get())));
+                dataSize = encodePubRec(body, *(dynamic_cast<message::PubRecMessage*>(msg.get())));
                 break;
             case MQTT_MSG_PUBREL:
-                encodePubRel(body, *(dynamic_cast<message::PubRelMessage*>(msg.get())));
+                dataSize = encodePubRel(body, *(dynamic_cast<message::PubRelMessage*>(msg.get())));
                 break;
             case MQTT_MSG_PUBCOMP:
-                encodePubComp(body, *(dynamic_cast<message::PubCompMessage*>(msg.get())));
+                dataSize = encodePubComp(body, *(dynamic_cast<message::PubCompMessage*>(msg.get())));
                 break;
             case MQTT_MSG_SUBSCRIBE:
-                encodeSubscribe(body, *(dynamic_cast<message::SubscribeMessage*>(msg.get())));
+                dataSize = encodeSubscribe(body, *(dynamic_cast<message::SubscribeMessage*>(msg.get())));
                 break;
             case MQTT_MSG_SUBACK:
-                encodeSubAck(body, *(dynamic_cast<message::SubAckMessage*>(msg.get())));
+                dataSize = encodeSubAck(body, *(dynamic_cast<message::SubAckMessage*>(msg.get())));
                 break;
             case MQTT_MSG_UNSUBSCRIBE:
-                encodeUnSubscribe(body, *(dynamic_cast<message::UnSubscribeMessage*>(msg.get())));
+                dataSize = encodeUnSubscribe(body, *(dynamic_cast<message::UnSubscribeMessage*>(msg.get())));
                 break;
             case MQTT_MSG_UNSUBACK:
-                encodeUnSubAck(body, *(dynamic_cast<message::UnSubAckMessage*>(msg.get())));
+                dataSize = encodeUnSubAck(body, *(dynamic_cast<message::UnSubAckMessage*>(msg.get())));
                 break;
             case MQTT_MSG_PINGREQ:
-                encodePingReq(body, *(dynamic_cast<message::PingReqMessage*>(msg.get())));
+                dataSize = encodePingReq(body, *(dynamic_cast<message::PingReqMessage*>(msg.get())));
                 break;
             case MQTT_MSG_PINGRESP:
-                encodePingResp(body, *(dynamic_cast<message::PingRespMessage*>(msg.get())));
+                dataSize = encodePingResp(body, *(dynamic_cast<message::PingRespMessage*>(msg.get())));
                 break;
             case MQTT_MSG_DISCONNECT:
-                encodeDisconnect(body, *(dynamic_cast<message::DisconnectMessage*>(msg.get())));
+                dataSize = encodeDisconnect(body, *(dynamic_cast<message::DisconnectMessage*>(msg.get())));
                 break;
             default:
                 throw;
@@ -66,21 +66,18 @@ namespace mqtt {
         writer.writeUint8(msg->getHeader().all, stream);
         writer.writeVariableInt(dataSize, stream);
         stream.write((const char *) data.data().data(), data.size());
-
     }
 
     int Encoder::encodeConnect(std::ostream &out, const message::ConnectMessage &message) {
         Writer writer;
         size_t res = 0;
 
-        /// 3.1.2 Variable header
         /// 3.1.2.1 Protocol name
         res += writer.writeString(message.getProtocolName(), out);
         /// 3.1.2.2 Protocol version
         res += writer.writeUint8(message.getProtocolLevel(), out);
         /// 3.1.2.2 Protocol flags
         res += writer.writeUint8(message.getFlags().all, out);
-        // ...
         /// 3.1.2.10 Keep alive
         res += writer.writeUint16(message.getKeepAlive(), out);
 
@@ -128,9 +125,14 @@ namespace mqtt {
         size_t res = 0;
         /// 3.3.2 Variable header
         /// 3.3.2.1 Topic Name
-        writer.writeString(message.getTopic(), out);
-        /// 3.3.2.2 Packet Identifier
-        writer.writeUint16(message.getPacketIdentifier(), out);
+        res += writer.writeString(message.getTopic(), out);
+        if (message.getHeader().bits.qos) {
+            /// 3.3.2.2 Packet Identifier
+            res += writer.writeUint16(message.getPacketIdentifier(), out);
+        }
+
+        /// 3.3.3 Payload
+        res += writer.writeData(message.getMessage(), out);
 
         return res;
     }
@@ -199,7 +201,7 @@ namespace mqtt {
         /// 3.9.2 Variable header
         res += writer.writeUint16(message.getPacketIdentifier(), out);
         /// 3.9.3 Payload
-        res += writer.writeUint16(message.getPacketIdentifier(), out);
+        res += writer.writeUint8(message.getReturnCode(), out);
 
         return res;
     }

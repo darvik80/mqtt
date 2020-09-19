@@ -30,9 +30,9 @@ namespace mqtt {
     union Header {
         uint8_t all;
         struct {
-            bool dup: 1;            /**< DUP flag bit */
-            unsigned int qos: 2;    /**< QoS value, 0, 1 or 2 */
             bool retain: 1;
+            unsigned int qos: 2;    /**< QoS value, 0, 1 or 2 */
+            bool dup: 1;            /**< DUP flag bit */
             unsigned int type: 4;    /**< message type nibble */
         } bits;
     };

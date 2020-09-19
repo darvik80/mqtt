@@ -8,6 +8,9 @@
 #include <ostream>
 #include <boost/endian.hpp>
 
+#include <string>
+#include <vector>
+
 namespace mqtt {
     class Writer {
     private:
@@ -59,6 +62,24 @@ namespace mqtt {
             out.write(val.data(), val.length());
 
             return ret + val.length();
+        };
+
+        size_t writeData(const std::string &val, std::ostream &out) {
+            out.write(val.data(), val.length());
+
+            return val.length();
+        };
+
+        size_t writeData(const uint8_t *val, size_t size, std::ostream &out) {
+            out.write((const char*)val, size);
+
+            return size;
+        };
+
+        size_t writeData(const std::vector<uint8_t>& val, std::ostream &out) {
+            out.write((const char*)val.data(), val.size());
+
+            return val.size();
         };
 
         size_t writeVariableInt(int val, std::ostream &inc) {

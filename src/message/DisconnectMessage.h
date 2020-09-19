@@ -10,10 +10,8 @@
 namespace mqtt::message {
 
     class DisconnectMessage : public Message {
-        [[nodiscard]] int getType() const override {
-            return MQTT_MSG_DISCONNECT;
-        }
-
+    public:
+        DisconnectMessage() : Message(MQTT_MSG_DISCONNECT){ }
     };
 
 }

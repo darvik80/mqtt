@@ -66,6 +66,20 @@ namespace mqtt {
             return res;
         }
 
+        std::vector<uint8_t> readRestData(std::istream &inc) {
+            std::vector<uint8_t> res;
+            try {
+                while (!inc.eof()) {
+                    res.push_back(readUint8(inc));
+                }
+            } catch (std::exception& ignore) {
+
+
+            }
+
+            return res;
+        }
+
         int readVariableInt(std::istream &inc) {
             int multiplier = 1;
             int result = 0;

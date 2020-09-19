@@ -11,10 +11,7 @@ namespace mqtt::message {
 
     class PingReqMessage : public Message {
     public:
-        [[nodiscard]] int getType() const override {
-            return MQTT_MSG_PINGREQ;
-        }
-
+        PingReqMessage() : Message(MQTT_MSG_PINGREQ){ }
     };
 
 }

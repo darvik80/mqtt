@@ -52,7 +52,13 @@ namespace mqtt::message {
     }
 
     void ConnectMessage::setWillTopic(const std::string &willTopic) {
+        setWillTopic(willTopic, "");
+    }
+
+    void ConnectMessage::setWillTopic(const std::string &willTopic, const std::string &willMessage) {
+        _flags.bits.willFlag = true;
         _willTopic = willTopic;
+        _willMessage = willMessage;
     }
 
     const std::string &ConnectMessage::getWillMessage() const {
@@ -78,5 +84,4 @@ namespace mqtt::message {
     void ConnectMessage::setPassword(const std::string &password) {
         _password = password;
     }
-
 }

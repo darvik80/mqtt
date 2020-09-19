@@ -9,6 +9,7 @@
 #include <boost/test/unit_test.hpp>
 
 class EncoderFixture {
+public:
     mqtt::Encoder encoder;
 };
 

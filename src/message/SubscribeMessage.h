@@ -31,13 +31,11 @@ namespace mqtt::message {
 
     class SubscribeMessage : public Message {
     private:
-        uint16_t _packetIdentifier;
+        uint16_t _packetIdentifier{};
 
         std::vector<SubscribePayload> _topics;
     public:
-        [[nodiscard]] int getType() const override {
-            return MQTT_MSG_SUBSCRIBE;
-        }
+        SubscribeMessage() : Message(MQTT_MSG_SUBSCRIBE) { }
 
         [[nodiscard]] uint16_t getPacketIdentifier() const;
 

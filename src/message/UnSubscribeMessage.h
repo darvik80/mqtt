@@ -16,9 +16,7 @@ namespace mqtt::message {
         uint16_t _packetIdentifier;
         std::vector<std::string> _topicFilters;
     public:
-        [[nodiscard]] int getType() const override {
-            return MQTT_MSG_UNSUBSCRIBE;
-        }
+        UnSubscribeMessage() : Message(MQTT_MSG_UNSUBSCRIBE) { }
 
         [[nodiscard]] uint16_t getPacketIdentifier() const;
 

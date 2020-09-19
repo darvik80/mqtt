@@ -20,9 +20,7 @@ namespace mqtt::message {
         } _flags{};     /**< connack flags byte */
         uint8_t _rc{}; /**< connack reason code */
     public:
-        [[nodiscard]] int getType() const override {
-            return MQTT_MSG_CONNACK;
-        }
+        ConnAckMessage() : Message(MQTT_MSG_CONNACK){ }
 
         [[nodiscard]] uint8_t getReasonCode() const;
 

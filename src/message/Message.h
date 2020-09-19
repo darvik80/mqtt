@@ -17,12 +17,30 @@ namespace mqtt::message {
 
     private:
         Header _header{};
+
+        uint32_t _size{};
     public:
-        [[nodiscard]] virtual int getType() const = 0;
+        explicit Message(uint8_t type);
+
+        void setQos(uint8_t qos) {
+            _header.bits.qos = qos;
+        }
+
+        void setRetain(bool retain) {
+            _header.bits.retain = retain;
+        }
+
+        [[nodiscard]] virtual int getType() const  {
+            return _header.bits.type;
+        }
 
         [[nodiscard]] const Header &getHeader() const;
 
         void setHeader(uint8_t header);
+
+        [[nodiscard]] uint32_t getSize() const;
+
+        void setSize(uint32_t size);
 
         virtual ~Message() = default;
     };

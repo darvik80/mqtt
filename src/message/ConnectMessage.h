@@ -12,10 +12,10 @@ namespace mqtt::message {
 
     class ConnectMessage : public Message {
     private:
-        std::string _protocolName{"MQTT"};
+        std::string _protocolName{"MQIsdp"};
         uint8_t _protocolLevel{3};
-        Flags _flags{};
-        std::string _clientId{"MQIsdp"};
+        Flags _flags{2};
+        std::string _clientId{};
         uint16_t _keepAlive{10};
 
         // connection data
@@ -25,9 +25,7 @@ namespace mqtt::message {
         std::string _userName;
         std::string _password;
     public:
-        [[nodiscard]] int getType() const override {
-            return MQTT_MSG_CONNECT;
-        }
+        ConnectMessage() : Message(MQTT_MSG_CONNECT){ }
 
         [[nodiscard]] const std::string &getProtocolName() const;
 
@@ -40,6 +38,7 @@ namespace mqtt::message {
         [[nodiscard]] const std::string &getWillTopic() const;
 
         void setWillTopic(const std::string &willTopic);
+        void setWillTopic(const std::string &willTopic, const std::string &willMessage);
 
         [[nodiscard]] const std::string &getWillMessage() const;
 

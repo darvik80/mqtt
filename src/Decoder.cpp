@@ -81,7 +81,7 @@ namespace mqtt {
         Reader reader;
         auto msg = std::make_unique<message::ConnectMessage>();
         msg->setHeader(reader.readUint8(inc));
-        size_t msgSize = reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         msg->setProtocolName(reader.readString(inc));
         /// 3.1.2.2 Protocol Level
@@ -123,7 +123,8 @@ namespace mqtt {
 
         /// 3.2.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
+
         /// 3.2.2 Variable header
         /// 3.2.2.1 Connect Acknowledge Flags
         /// 3.2.2.2 Session Present
@@ -141,7 +142,7 @@ namespace mqtt {
 
         /// 3.2.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        size_t msgSize = reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         /// 3.3.2.1 Topic Name
         msg->setTopic(reader.readString(inc));
@@ -151,6 +152,8 @@ namespace mqtt {
             msg->setPacketIdentifier(reader.readInt16(inc));
         }
 
+        msg->setMessage(reader.readRestData(inc));
+
         return msg;
     }
 
@@ -159,7 +162,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::PubAckMessage>();
         /// 3.4.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        size_t msgSize = reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         /// 3.4.2 Variable header
         msg->setPacketIdentifier(reader.readInt16(inc));
@@ -172,7 +175,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::PubRecMessage>();
         /// 3.5.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        size_t msgSize = reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         /// 3.5.2 Variable header
         msg->setPacketIdentifier(reader.readInt16(inc));
@@ -186,6 +189,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::PubRelMessage>();
         /// 3.6.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
+        msg->setSize(reader.readVariableInt(inc));
 
         /// 3.6.2 Variable header
         msg->setPacketIdentifier(reader.readInt16(inc));
@@ -198,7 +202,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::PubCompMessage>();
         /// 3.7.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        size_t msgSize = reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         /// 3.7.2 Variable header
         msg->setPacketIdentifier(reader.readInt16(inc));
@@ -211,7 +215,8 @@ namespace mqtt {
         auto msg = std::make_unique<message::SubscribeMessage>();
         /// 3.8.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        int msgSize = reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
+        uint32_t msgSize = msg->getSize();
 
         /// 3.8.2.1 Variable header non normative example
         msg->setPacketIdentifier(reader.readInt16(inc));
@@ -235,7 +240,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::SubAckMessage>();
         /// 3.9.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         /// 3.9.2 Variable header
         msg->setPacketIdentifier(reader.readInt16(inc));
@@ -252,7 +257,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::UnSubscribeMessage>();
         /// 3.10.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         /// 3.10.2 Variable header
         msg->setPacketIdentifier(reader.readInt16(inc));
@@ -270,7 +275,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::UnSubAckMessage>();
         /// 3.11.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         /// 3.11.2 Variable header
         msg->setPacketIdentifier(reader.readInt16(inc));
@@ -283,7 +288,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::PingReqMessage>();
         /// 3.12.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         return msg;
     }
@@ -293,7 +298,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::PingRespMessage>();
         /// 3.13.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         return msg;
     }
@@ -303,7 +308,7 @@ namespace mqtt {
         auto msg = std::make_unique<message::DisconnectMessage>();
         /// 3.14.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
-        reader.readVariableInt(inc);
+        msg->setSize(reader.readVariableInt(inc));
 
         return msg;
     }

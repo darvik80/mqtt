@@ -13,9 +13,7 @@ namespace mqtt::message {
     private:
         uint16_t _packetIdentifier{};
     public:
-        [[nodiscard]] int getType() const override {
-            return MQTT_MSG_PUBREC;
-        }
+        PubRecMessage() : Message(MQTT_MSG_PUBREC){ }
 
         [[nodiscard]] uint16_t getPacketIdentifier() const;
 
