@@ -5,12 +5,13 @@
 #include "Encoder.h"
 #include "Writer.h"
 
+using namespace boost;
+using namespace mqtt::message;
+
 namespace mqtt {
-    void Encoder::encode(boost::asio::streambuf &buf, std::unique_ptr<message::Message> (*supplier)()) {
+    void Encoder::encode(boost::asio::streambuf &buf, Message::Ptr msg) {
         boost::asio::streambuf data;
         std::ostream body(&data);
-
-        auto msg = supplier();
 
         int dataSize = 0;
         switch (msg->getType()) {

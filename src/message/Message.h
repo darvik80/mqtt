@@ -12,8 +12,8 @@ namespace mqtt::message {
 
     class Message {
     public:
-        typedef std::shared_ptr<Message> MessagePtr;
-        typedef std::unique_ptr<Message> MessageAutoPtr;
+        typedef std::shared_ptr<Message> Ptr;
+        typedef std::unique_ptr<Message> AutoPtr;
 
     private:
         Header _header{};

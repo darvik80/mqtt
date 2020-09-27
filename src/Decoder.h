@@ -27,22 +27,36 @@ namespace mqtt {
 
     class Decoder {
     private:
-        virtual std::unique_ptr<message::ConnectMessage> decodeConnect(std::istream &inc);
-        virtual std::unique_ptr<message::ConnAckMessage> decodeConnAck(std::istream &inc);
-        virtual std::unique_ptr<message::PublishMessage> decodePublish(std::istream &inc);
-        virtual std::unique_ptr<message::PubAckMessage> decodePubAck(std::istream &inc);
-        virtual std::unique_ptr<message::PubRecMessage> decodePubRec(std::istream &inc);
-        virtual std::unique_ptr<message::PubRelMessage> decodePubRel(std::istream &inc);
-        virtual std::unique_ptr<message::PubCompMessage> decodePubComp(std::istream &inc);
-        virtual std::unique_ptr<message::SubscribeMessage> decodeSubscribe(std::istream &inc);
-        virtual std::unique_ptr<message::SubAckMessage> decodeSubAck(std::istream &inc);
-        virtual std::unique_ptr<message::UnSubscribeMessage> decodeUnSubscribe(std::istream &inc);
-        virtual std::unique_ptr<message::UnSubAckMessage> decodeUnSubAck(std::istream &inc);
-        virtual std::unique_ptr<message::PingReqMessage> decodePingReq(std::istream &inc);
-        virtual std::unique_ptr<message::PingRespMessage> decodePingResp(std::istream &inc);
-        virtual std::unique_ptr<message::DisconnectMessage> decodeDisconnect(std::istream &inc);
+        virtual message::Message::Ptr decodeConnect(std::istream &inc);
+
+        virtual message::Message::Ptr decodeConnAck(std::istream &inc);
+
+        virtual message::Message::Ptr decodePublish(std::istream &inc);
+
+        virtual message::Message::Ptr decodePubAck(std::istream &inc);
+
+        virtual message::Message::Ptr decodePubRec(std::istream &inc);
+
+        virtual message::Message::Ptr decodePubRel(std::istream &inc);
+
+        virtual message::Message::Ptr decodePubComp(std::istream &inc);
+
+        virtual message::Message::Ptr decodeSubscribe(std::istream &inc);
+
+        virtual message::Message::Ptr decodeSubAck(std::istream &inc);
+
+        virtual message::Message::Ptr decodeUnSubscribe(std::istream &inc);
+
+        virtual message::Message::Ptr decodeUnSubAck(std::istream &inc);
+
+        virtual message::Message::Ptr decodePingReq(std::istream &inc);
+
+        virtual message::Message::Ptr decodePingResp(std::istream &inc);
+
+        virtual message::Message::Ptr decodeDisconnect(std::istream &inc);
+
     public:
-        virtual void decode(boost::asio::streambuf &buf, void (*consumer)(const mqtt::message::Message&));
+        virtual message::Message::Ptr decode(boost::asio::streambuf &buf);
 
     };
 

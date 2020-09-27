@@ -9,7 +9,7 @@ using namespace boost;
 
 namespace mqtt {
 
-    void Decoder::decode(asio::streambuf &buf, void (*consumer)(const mqtt::message::Message& )) {
+    message::Message::Ptr Decoder::decode(asio::streambuf &buf) {
         Header header{};
         header.all = buf.sgetc();
 
@@ -24,7 +24,7 @@ namespace mqtt {
         std::istream inc(&cache);
         inc.exceptions(std::istream::eofbit | std::istream::badbit);
 
-        message::Message::MessageAutoPtr ptrMsg;
+        message::Message::Ptr ptrMsg;
         switch (header.bits.type) {
             case MQTT_MSG_CONNECT:
                 ptrMsg = decodeConnect(inc);
@@ -72,14 +72,14 @@ namespace mqtt {
                 break;
         }
 
-        if (ptrMsg) {
-            consumer(*ptrMsg.get());
-        }
+        buf.consume(buf.size() - cache.size());
+
+        return ptrMsg;
     }
 
-    std::unique_ptr<message::ConnectMessage> Decoder::decodeConnect(std::istream &inc) {
+    message::Message::Ptr  Decoder::decodeConnect(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::ConnectMessage>();
+        auto msg = std::make_shared<message::ConnectMessage>();
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
 
@@ -117,9 +117,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::ConnAckMessage> Decoder::decodeConnAck(std::istream &inc) {
+    message::Message::Ptr Decoder::decodeConnAck(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::ConnAckMessage>();
+        auto msg = std::make_shared<message::ConnAckMessage>();
 
         /// 3.2.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
@@ -136,9 +136,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::PublishMessage> Decoder::decodePublish(std::istream &inc) {
+    message::Message::Ptr Decoder::decodePublish(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::PublishMessage>();
+        auto msg = std::make_shared<message::PublishMessage>();
 
         /// 3.2.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
@@ -157,9 +157,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::PubAckMessage> Decoder::decodePubAck(std::istream &inc) {
+    message::Message::Ptr  Decoder::decodePubAck(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::PubAckMessage>();
+        auto msg = std::make_shared<message::PubAckMessage>();
         /// 3.4.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -170,9 +170,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::PubRecMessage> Decoder::decodePubRec(std::istream &inc) {
+    message::Message::Ptr  Decoder::decodePubRec(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::PubRecMessage>();
+        auto msg = std::make_shared<message::PubRecMessage>();
         /// 3.5.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -184,9 +184,9 @@ namespace mqtt {
 
     }
 
-    std::unique_ptr<message::PubRelMessage> Decoder::decodePubRel(std::istream &inc) {
+    message::Message::Ptr  Decoder::decodePubRel(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::PubRelMessage>();
+        auto msg = std::make_shared<message::PubRelMessage>();
         /// 3.6.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -197,9 +197,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::PubCompMessage> Decoder::decodePubComp(std::istream &inc) {
+    message::Message::Ptr  Decoder::decodePubComp(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::PubCompMessage>();
+        auto msg = std::make_shared<message::PubCompMessage>();
         /// 3.7.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -210,9 +210,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::SubscribeMessage> Decoder::decodeSubscribe(std::istream &inc) {
+    message::Message::Ptr  Decoder::decodeSubscribe(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::SubscribeMessage>();
+        auto msg = std::make_shared<message::SubscribeMessage>();
         /// 3.8.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -235,9 +235,9 @@ namespace mqtt {
 
     }
 
-    std::unique_ptr<message::SubAckMessage> Decoder::decodeSubAck(std::istream &inc) {
+    message::Message::Ptr Decoder::decodeSubAck(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::SubAckMessage>();
+        auto msg = std::make_shared<message::SubAckMessage>();
         /// 3.9.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -252,9 +252,9 @@ namespace mqtt {
 
     }
 
-    std::unique_ptr<message::UnSubscribeMessage> Decoder::decodeUnSubscribe(std::istream &inc) {
+    message::Message::Ptr Decoder::decodeUnSubscribe(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::UnSubscribeMessage>();
+        auto msg = std::make_shared<message::UnSubscribeMessage>();
         /// 3.10.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -270,9 +270,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::UnSubAckMessage> Decoder::decodeUnSubAck(std::istream &inc) {
+    message::Message::Ptr Decoder::decodeUnSubAck(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::UnSubAckMessage>();
+        auto msg = std::make_shared<message::UnSubAckMessage>();
         /// 3.11.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -283,9 +283,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::PingReqMessage> Decoder::decodePingReq(std::istream &inc) {
+    message::Message::Ptr Decoder::decodePingReq(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::PingReqMessage>();
+        auto msg = std::make_shared<message::PingReqMessage>();
         /// 3.12.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));
@@ -293,7 +293,7 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::PingRespMessage> Decoder::decodePingResp(std::istream &inc) {
+    message::Message::Ptr Decoder::decodePingResp(std::istream &inc) {
         Reader reader;
         auto msg = std::make_unique<message::PingRespMessage>();
         /// 3.13.1 Fixed header
@@ -303,9 +303,9 @@ namespace mqtt {
         return msg;
     }
 
-    std::unique_ptr<message::DisconnectMessage> Decoder::decodeDisconnect(std::istream &inc) {
+    message::Message::Ptr Decoder::decodeDisconnect(std::istream &inc) {
         Reader reader;
-        auto msg = std::make_unique<message::DisconnectMessage>();
+        auto msg = std::make_shared<message::DisconnectMessage>();
         /// 3.14.1 Fixed header
         msg->setHeader(reader.readUint8(inc));
         msg->setSize(reader.readVariableInt(inc));

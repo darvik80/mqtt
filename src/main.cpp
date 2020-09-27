@@ -2,6 +2,7 @@
 
 #include <boost/asio.hpp>
 #include "Client.h"
+#include "TcpClient.h"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
@@ -19,7 +20,9 @@ int main() {
             "192.168.100.3",
             1883
     };
-    mqtt::Client clientO(service, properties);
+    mqtt::Client client(service, properties);
+
+    //mqtt::TcpClient tcpClient(service, "127.0.0.1", 5000);
     service.run();
     return 0;
 }

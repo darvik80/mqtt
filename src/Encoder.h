@@ -22,6 +22,7 @@
 #include <message/DisconnectMessage.h>
 #include "message/Message.h"
 #include <ostream>
+#include <boost/function/function1.hpp>
 
 namespace mqtt {
     class Encoder {
@@ -41,7 +42,7 @@ namespace mqtt {
         virtual int encodePingResp(std::ostream &out, const message::PingRespMessage& message);
         virtual int encodeDisconnect(std::ostream &out, const message::DisconnectMessage& message);
     public:
-        virtual void encode(boost::asio::streambuf &buf, std::unique_ptr<message::Message> (*supplier)());
+        virtual void encode(boost::asio::streambuf &buf, message::Message::Ptr msg);
     };
 
 }

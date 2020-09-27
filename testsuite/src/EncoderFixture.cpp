@@ -19,13 +19,12 @@ BOOST_FIXTURE_TEST_SUITE(EncoderTest, EncoderFixture)
         };
 
         boost::asio::streambuf buffer;
-        encoder.encode(buffer, []() {
-            auto msg = new ConnectMessage();
-            msg->setClientId("paho/DDE4DDAF4108D3E363");
-            msg->setKeepAlive(5);
 
-            return std::unique_ptr<Message>(msg);
-        });
+        auto msg = std::make_shared<ConnectMessage>();
+        msg->setClientId("paho/DDE4DDAF4108D3E363");
+        msg->setKeepAlive(5);
+
+        encoder.encode(buffer, msg);
 
         size_t packetSize = sizeof(packet) / sizeof(packet[0]);
         for (size_t idx = 0; idx < packetSize; idx++, buffer.snextc()) {
@@ -38,14 +37,12 @@ BOOST_FIXTURE_TEST_SUITE(EncoderTest, EncoderFixture)
                 0x20, 0x02, 0x00, 0x00
         };
 
-        boost::asio::streambuf buffer;
-        encoder.encode(buffer, []() {
-            auto msg = new ConnAckMessage();
-            msg->setReasonCode(0);
-            msg->setFlags(0);
+        auto msg = std::make_shared<ConnAckMessage>();
+        msg->setReasonCode(0);
+        msg->setFlags(0);
 
-            return std::unique_ptr<Message>(msg);
-        });
+        boost::asio::streambuf buffer;
+        encoder.encode(buffer, msg);
 
         size_t packetSize = sizeof(packet) / sizeof(packet[0]);
         for (size_t idx = 0; idx < packetSize; idx++, buffer.snextc()) {
@@ -60,15 +57,13 @@ BOOST_FIXTURE_TEST_SUITE(EncoderTest, EncoderFixture)
                 0x63, 0x00
         };
 
-        boost::asio::streambuf buffer;
-        encoder.encode(buffer, []() {
-            auto msg = new SubscribeMessage();
-            msg->setQos(1);
-            msg->setPacketIdentifier(1);
-            msg->addTopic("SampleTopic", 0);
+        auto msg = std::make_shared<SubscribeMessage>();
+        msg->setQos(1);
+        msg->setPacketIdentifier(1);
+        msg->addTopic("SampleTopic", 0);
 
-            return std::unique_ptr<Message>(msg);
-        });
+        boost::asio::streambuf buffer;
+        encoder.encode(buffer, msg);
 
         size_t packetSize = sizeof(packet) / sizeof(packet[0]);
         for (size_t idx = 0; idx < packetSize; idx++, buffer.snextc()) {
@@ -81,14 +76,12 @@ BOOST_FIXTURE_TEST_SUITE(EncoderTest, EncoderFixture)
                 0x90, 0x03, 0x00, 0x01, 0x00
         };
 
-        boost::asio::streambuf buffer;
-        encoder.encode(buffer, []() {
-            auto msg = new SubAckMessage();
-            msg->setPacketIdentifier(1);
-            msg->setReturnCode(0);
+        auto msg = std::make_shared<SubAckMessage>();
+        msg->setPacketIdentifier(1);
+        msg->setReturnCode(0);
 
-            return std::unique_ptr<Message>(msg);
-        });
+        boost::asio::streambuf buffer;
+        encoder.encode(buffer, msg);
 
         size_t packetSize = sizeof(packet) / sizeof(packet[0]);
         for (size_t idx = 0; idx < packetSize; idx++, buffer.snextc()) {
@@ -107,15 +100,13 @@ BOOST_FIXTURE_TEST_SUITE(EncoderTest, EncoderFixture)
                 0x6e, 0x74
         };
 
+        auto msg = std::make_shared<PublishMessage>();
+        msg->setTopic("SampleTopic");
+
+        msg->setMessage("Hello from the Paho blocking client");
+
         boost::asio::streambuf buffer;
-        encoder.encode(buffer, []() {
-            auto msg = new PublishMessage();
-            msg->setTopic("SampleTopic");
-
-            msg->setMessage("Hello from the Paho blocking client");
-
-            return std::unique_ptr<Message>(msg);
-        });
+        encoder.encode(buffer, msg);
 
         size_t packetSize = sizeof(packet) / sizeof(packet[0]);
         for (size_t idx = 0; idx < packetSize; idx++, buffer.snextc()) {
@@ -128,12 +119,9 @@ BOOST_FIXTURE_TEST_SUITE(EncoderTest, EncoderFixture)
                 0xe0, 00
         };
 
+        auto msg = std::make_shared<DisconnectMessage>();
         boost::asio::streambuf buffer;
-        encoder.encode(buffer, []() {
-            auto msg = new DisconnectMessage();
-
-            return std::unique_ptr<Message>(msg);
-        });
+        encoder.encode(buffer, msg);
 
         size_t packetSize = sizeof(packet) / sizeof(packet[0]);
         for (size_t idx = 0; idx < packetSize; idx++, buffer.snextc()) {
