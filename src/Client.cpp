@@ -21,7 +21,8 @@ namespace mqtt {
 
     void Client::startConnect() {
         _socket.async_connect(_endpoint, [this](const boost::system::error_code &err) {
-            this->onConnect(err);
+            DefaultChannelContext ctx(_service, _socket, err, 0);
+            this->channelActive(ctx);
         });
     }
 
@@ -29,7 +30,8 @@ namespace mqtt {
         _socket.async_read_some(
                 boost::asio::buffer(_incBuf),
                 [this](const boost::system::error_code &err, std::size_t size) {
-                    this->onRead(err, size);
+                    DefaultChannelContext ctx(_service, _socket, err, size);
+                    this->channelReadComplete(ctx);
                 }
         );
     }
@@ -41,68 +43,8 @@ namespace mqtt {
 
         return err.failed();
     }
-
-    void Client::onConnect(const boost::system::error_code &err) {
-        if (!_socket.is_open() || err) {
-            if (!_socket.is_open()) {
-                std::cout << "Connect timed out\n";
-            } else {
-                std::cout << "Connect error: " << err.message() << "\n";
-                _socket.close();
-            }
-
-            _restartTimer = std::make_unique<Timer>(_service, 10, [this]() -> void { this->startConnect(); });
-        } else {
-            std::cout << "Connected!" << std::endl;
-            _status = ACTIVE;
-
-            auto connMsg = std::make_shared<ConnectMessage>();
-            connMsg->setClientId("Rover");
-            post(connMsg);
-
-            startRead();
-        }
-    }
-
-    void Client::onRead(const boost::system::error_code &err, std::size_t size) {
-        if (err) {
-            std::cout << "OnRead: " << err.message() << std::endl;
-            startConnect();
-        }
-        if (size) {
-            _inc.sputn((const char *) _incBuf.data(), size);
-
-            try {
-                while (_inc.size()) {
-                    onMessage(_decoder.decode(_inc));
-                }
-            } catch (std::exception &ex) {
-                // catch segmented messages
-            }
-        }
-
-        startRead();
-    }
-
     void Client::onWrite(const boost::system::error_code &err, std::size_t size) {
         checkError(err);
-    }
-
-    void Client::subscribe(const std::string &topicFilter, int qos, SubscribeCallback::Ptr callback) {
-        _callbacks[++_callbackIdSeq] = std::move(callback);
-
-        auto msg = std::make_shared<SubscribeMessage>();
-        msg->setQos(1);
-        msg->setPacketIdentifier(1);
-        msg->addTopic(topicFilter, 0);
-
-        boost::asio::post(_service, [this, msg]() {
-            this->send(msg, [](const Future &future) {
-                if (!future.isSuccess()) {
-                    std::cout << "Error: " << future.cause()->what() << std::endl;
-                }
-            });
-        });
     }
 
     void Client::send(message::Message::Ptr msg, FutureListener listener) {
@@ -116,11 +58,11 @@ namespace mqtt {
     }
 
     void Client::post(message::Message::Ptr msg) {
-        send(msg, nullptr);
+        send(std::move(msg), nullptr);
     }
 
     void Client::onMessage(message::Message::Ptr msg) {
-        switch (msg->getHeader().bits.type) {
+        switch (msg->getType()) {
             case MQTT_MSG_CONNACK: {
                 auto ack = (ConnAckMessage *) msg.get();
                 if (ack->getReasonCode()) {
@@ -153,5 +95,51 @@ namespace mqtt {
             std::cout << "Ping MQTT" << std::endl;
             post(std::make_shared<PingReqMessage>());
         });
+    }
+
+    void Client::channelActive(ChannelContext &ctx) {
+        if (!ctx.getSocket().is_open() || ctx.getErrorCode()) {
+            if (!_socket.is_open()) {
+                std::cout << "Connect timed out\n";
+            } else {
+                std::cout << "Connect error: " << ctx.getErrorCode().message() << "\n";
+                _socket.close();
+            }
+
+            _restartTimer = std::make_unique<Timer>(ctx.getIoService(), 10, [this]() { this->startConnect(); });
+        } else {
+            std::cout << "Connected!" << std::endl;
+            _status = ACTIVE;
+
+            auto connMsg = std::make_shared<ConnectMessage>();
+            connMsg->setClientId("Rover");
+            post(connMsg);
+
+            startRead();
+        }
+    }
+
+    void Client::channelInactive(ChannelContext &ctx) {
+
+    }
+
+    void Client::channelReadComplete(ChannelContext &ctx) {
+        if (ctx.getErrorCode()) {
+            std::cout << "OnRead: " << ctx.getErrorCode().message() << std::endl;
+            startConnect();
+        }
+        if (ctx.getSize()) {
+            _inc.sputn((const char *) _incBuf.data(), ctx.getSize());
+
+            try {
+                while (_inc.size()) {
+                    onMessage(_decoder.decode(_inc));
+                }
+            } catch (std::exception &ex) {
+                // catch segmented messages
+            }
+        }
+
+        startRead();
     }
 }

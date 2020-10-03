@@ -30,7 +30,7 @@ namespace mqtt::message {
             _header.bits.retain = retain;
         }
 
-        [[nodiscard]] virtual int getType() const  {
+        [[nodiscard]] virtual uint8_t getType() const  {
             return _header.bits.type;
         }
 

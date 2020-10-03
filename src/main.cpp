@@ -2,10 +2,14 @@
 
 #include <boost/asio.hpp>
 #include "Client.h"
-#include "TcpClient.h"
+
+#include "logging/Logger.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    mqtt::logging::Logger::init();
+
+    MQTT_LOG(error) << "Hello world!!!";
+
     boost::asio::io_service service;
 
     boost::asio::signal_set signals(service, SIGINT, SIGTERM, SIGQUIT);

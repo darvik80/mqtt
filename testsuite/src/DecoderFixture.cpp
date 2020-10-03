@@ -21,15 +21,15 @@ BOOST_FIXTURE_TEST_SUITE(DecoderTest, DecoderFixture)
         boost::asio::streambuf buffer;
         buffer.sputn((const char *) packet, sizeof(packet) / sizeof(packet[0]));
 
-        decoder.decode(buffer, [](const mqtt::message::Message &msg) {
-            auto &connMsg = dynamic_cast<ConnectMessage const &>(msg);
-            BOOST_REQUIRE_EQUAL(37, connMsg.getSize());
-            BOOST_REQUIRE_EQUAL(3, connMsg.getProtocolLevel());
-            BOOST_CHECK(connMsg.getProtocolName() == "MQIsdp");
-            BOOST_CHECK(connMsg.getFlags().bits.cleanSession == false);
+        auto msg = decoder.decode(buffer);
 
-            BOOST_CHECK(connMsg.getClientId() == "paho/DDE4DDAF4108D3E363");
-        });
+        auto &connMsg = dynamic_cast<ConnectMessage const &>(*msg);
+        BOOST_REQUIRE_EQUAL(37, connMsg.getSize());
+        BOOST_REQUIRE_EQUAL(3, connMsg.getProtocolLevel());
+        BOOST_CHECK(connMsg.getProtocolName() == "MQIsdp");
+        BOOST_CHECK(connMsg.getFlags().bits.cleanSession == false);
+
+        BOOST_CHECK(connMsg.getClientId() == "paho/DDE4DDAF4108D3E363");
     }
 
     BOOST_AUTO_TEST_CASE(decodeConnAck) {
@@ -40,12 +40,12 @@ BOOST_FIXTURE_TEST_SUITE(DecoderTest, DecoderFixture)
         boost::asio::streambuf buffer;
         buffer.sputn((const char *) packet, sizeof(packet) / sizeof(packet[0]));
 
-        decoder.decode(buffer, [](const mqtt::message::Message &msg) {
-            auto &connAckMsg = dynamic_cast<ConnAckMessage const &>(msg);
-            BOOST_REQUIRE_EQUAL(2, connAckMsg.getSize());
-            BOOST_REQUIRE_EQUAL(0, connAckMsg.getFlags());
-            BOOST_REQUIRE_EQUAL(0, connAckMsg.getReasonCode());
-        });
+        auto msg = decoder.decode(buffer);
+
+        auto &connAckMsg = dynamic_cast<ConnAckMessage const &>(*msg);
+        BOOST_REQUIRE_EQUAL(2, connAckMsg.getSize());
+        BOOST_REQUIRE_EQUAL(0, connAckMsg.getFlags());
+        BOOST_REQUIRE_EQUAL(0, connAckMsg.getReasonCode());
     }
 
     BOOST_AUTO_TEST_CASE(decodeSubscribe) {
@@ -58,15 +58,15 @@ BOOST_FIXTURE_TEST_SUITE(DecoderTest, DecoderFixture)
         boost::asio::streambuf buffer;
         buffer.sputn((const char *) packet, sizeof(packet) / sizeof(packet[0]));
 
-        decoder.decode(buffer, [](const mqtt::message::Message &msg) {
-            auto &subsMsg = dynamic_cast<SubscribeMessage const &>(msg);
-            BOOST_REQUIRE_EQUAL(16, subsMsg.getSize());
-            BOOST_REQUIRE_EQUAL(1, subsMsg.getPacketIdentifier());
-            BOOST_REQUIRE_EQUAL(1, subsMsg.getTopics().size());
-            BOOST_CHECK(subsMsg.getTopics()[0].getTopicFilter() == "SampleTopic");
-            BOOST_REQUIRE_EQUAL(0, subsMsg.getTopics()[0].getQos());
-            BOOST_REQUIRE_EQUAL(1, subsMsg.getTopics().size());
-        });
+        auto msg = decoder.decode(buffer);
+
+        auto &subsMsg = dynamic_cast<SubscribeMessage const &>(*msg);
+        BOOST_REQUIRE_EQUAL(16, subsMsg.getSize());
+        BOOST_REQUIRE_EQUAL(1, subsMsg.getPacketIdentifier());
+        BOOST_REQUIRE_EQUAL(1, subsMsg.getTopics().size());
+        BOOST_CHECK(subsMsg.getTopics()[0].getTopicFilter() == "SampleTopic");
+        BOOST_REQUIRE_EQUAL(0, subsMsg.getTopics()[0].getQos());
+        BOOST_REQUIRE_EQUAL(1, subsMsg.getTopics().size());
     }
 
     BOOST_AUTO_TEST_CASE(decodeSubAck) {
@@ -77,12 +77,12 @@ BOOST_FIXTURE_TEST_SUITE(DecoderTest, DecoderFixture)
         boost::asio::streambuf buffer;
         buffer.sputn((const char *) packet, sizeof(packet) / sizeof(packet[0]));
 
-        decoder.decode(buffer, [](const mqtt::message::Message &msg) {
-            auto &subAckMsg = dynamic_cast<SubAckMessage const &>(msg);
-            BOOST_REQUIRE_EQUAL(3, subAckMsg.getSize());
-            BOOST_REQUIRE_EQUAL(1, subAckMsg.getPacketIdentifier());
-            BOOST_REQUIRE_EQUAL(0, subAckMsg.getReturnCode());
-        });
+        auto msg = decoder.decode(buffer);
+
+        auto &subAckMsg = dynamic_cast<SubAckMessage const &>(*msg);
+        BOOST_REQUIRE_EQUAL(3, subAckMsg.getSize());
+        BOOST_REQUIRE_EQUAL(1, subAckMsg.getPacketIdentifier());
+        BOOST_REQUIRE_EQUAL(0, subAckMsg.getReturnCode());
     }
 
     BOOST_AUTO_TEST_CASE(decodePublish) {
@@ -99,14 +99,14 @@ BOOST_FIXTURE_TEST_SUITE(DecoderTest, DecoderFixture)
         boost::asio::streambuf buffer;
         buffer.sputn((const char *) packet, sizeof(packet) / sizeof(packet[0]));
 
-        decoder.decode(buffer, [](const mqtt::message::Message &msg) {
-            auto &pubMsg = dynamic_cast<PublishMessage const &>(msg);
-            BOOST_REQUIRE_EQUAL(48, pubMsg.getSize());
-            BOOST_REQUIRE_EQUAL(0, pubMsg.getHeader().bits.qos);
-            BOOST_REQUIRE_EQUAL(1, pubMsg.getHeader().bits.retain); // to server message
-            BOOST_REQUIRE_EQUAL(0, pubMsg.getPacketIdentifier());
-            BOOST_CHECK(pubMsg.getTopic() == "SampleTopic");
-        });
+        auto msg = decoder.decode(buffer);
+
+        auto &pubMsg = dynamic_cast<PublishMessage const &>(*msg);
+        BOOST_REQUIRE_EQUAL(48, pubMsg.getSize());
+        BOOST_REQUIRE_EQUAL(0, pubMsg.getHeader().bits.qos);
+        BOOST_REQUIRE_EQUAL(1, pubMsg.getHeader().bits.retain); // to server message
+        BOOST_REQUIRE_EQUAL(0, pubMsg.getPacketIdentifier());
+        BOOST_CHECK(pubMsg.getTopic() == "SampleTopic");
     }
 
     BOOST_AUTO_TEST_CASE(decodeDisconnect) {
@@ -117,10 +117,10 @@ BOOST_FIXTURE_TEST_SUITE(DecoderTest, DecoderFixture)
         boost::asio::streambuf buffer;
         buffer.sputn((const char *) packet, sizeof(packet) / sizeof(packet[0]));
 
-        decoder.decode(buffer, [](const mqtt::message::Message &msg) {
-            auto &disconnMsg = dynamic_cast<DisconnectMessage const &>(msg);
-            BOOST_REQUIRE_EQUAL(0, disconnMsg.getSize());
-        });
+        auto msg = decoder.decode(buffer);
+
+        auto &disconnMsg = dynamic_cast<DisconnectMessage const &>(*msg);
+        BOOST_REQUIRE_EQUAL(0, disconnMsg.getSize());
     }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -16,10 +16,6 @@ namespace mqtt::message {
     public:
         SubAckMessage() : Message(MQTT_MSG_SUBACK){ }
 
-        [[nodiscard]] int getType() const override {
-            return MQTT_MSG_SUBACK;
-        }
-
         [[nodiscard]] uint16_t getPacketIdentifier() const;
 
         void setPacketIdentifier(uint16_t packetIdentifier);

@@ -11,6 +11,7 @@ file(GLOB SRCS_G
         src/Timer.cpp
         src/TcpClient.cpp
         src/message/*.cpp
+        src/logging/*.cpp
         src/main.cpp
         )
 
@@ -19,12 +20,17 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/src
 )
 
-find_package(Boost REQUIRED COMPONENTS system filesystem)
+add_definitions(-DBOOST_LOG_DYN_LINK)
+
+find_package(Boost REQUIRED COMPONENTS system filesystem thread log log_setup)
+FIND_PACKAGE(Threads)
 
 link_directories(
         /usr/local/lib
 )
 
 add_executable(mqtt ${SRCS_G})
+
+target_link_libraries(mqtt ${Boost_LIBRARIES})
 
 add_subdirectory(testsuite)
