@@ -6,14 +6,6 @@
 
 namespace mqtt::message {
 
-    uint16_t SubAckMessage::getPacketIdentifier() const {
-        return _packetIdentifier;
-    }
-
-    void SubAckMessage::setPacketIdentifier(uint16_t packetIdentifier) {
-        _packetIdentifier = packetIdentifier;
-    }
-
     uint8_t SubAckMessage::getReturnCode() const {
         return _returnCode;
     }

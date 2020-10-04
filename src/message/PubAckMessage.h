@@ -6,18 +6,13 @@
 #define MQTT_PUBACKMESSAGE_H
 
 #include "Message.h"
+#include "MessagePacketIdentifier.h"
 
 namespace mqtt::message {
 
-    class PubAckMessage : public Message {
-    private:
-        uint16_t _packetIdentifier{};
+    class PubAckMessage : public Message,  public MessagePacketIdentifier {
     public:
         PubAckMessage() : Message(MQTT_MSG_PUBACK){ }
-
-        [[nodiscard]] uint16_t getPacketIdentifier() const;
-
-        void setPacketIdentifier(uint16_t packetIdentifier);
     };
 
 }

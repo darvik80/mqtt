@@ -6,14 +6,6 @@
 
 namespace mqtt::message {
 
-    uint16_t UnSubscribeMessage::getPacketIdentifier() const {
-        return _packetIdentifier;
-    }
-
-    void UnSubscribeMessage::setPacketIdentifier(uint16_t packetIdentifier) {
-        _packetIdentifier = packetIdentifier;
-    }
-
     const std::vector<std::string> &UnSubscribeMessage::getTopicFilters() const {
         return _topicFilters;
     }

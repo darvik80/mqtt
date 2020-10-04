@@ -6,18 +6,13 @@
 #define MQTT_PUBRELMESSAGE_H
 
 #include "Message.h"
+#include "MessagePacketIdentifier.h"
 
 namespace mqtt::message {
 
-    class PubRelMessage : public Message {
-    private:
-        uint16_t _packetIdentifier{};
+    class PubRelMessage : public Message, public MessagePacketIdentifier {
     public:
         PubRelMessage() : Message(MQTT_MSG_PUBREL){ }
-
-        [[nodiscard]] uint16_t getPacketIdentifier() const;
-
-        void setPacketIdentifier(uint16_t packetIdentifier);
     };
 
 }

@@ -6,18 +6,13 @@
 #define MQTT_PUBCOMPMESSAGE_H
 
 #include "Message.h"
+#include "MessagePacketIdentifier.h"
 
 namespace mqtt::message {
 
-    class PubCompMessage : public Message {
-    private:
-        uint16_t _packetIdentifier{};
+    class PubCompMessage : public Message, public MessagePacketIdentifier {
     public:
         PubCompMessage() : Message(MQTT_MSG_PUBCOMP){ }
-
-        [[nodiscard]] uint16_t getPacketIdentifier() const;
-
-        void setPacketIdentifier(uint16_t packetIdentifier);
     };
 
 }

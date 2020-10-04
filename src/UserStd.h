@@ -13,6 +13,8 @@ namespace mqtt {
     typedef std::vector<uint8_t> ByteBuffer;
 
     typedef std::shared_ptr<boost::asio::io_service> ServicePtr;
+
+    typedef boost::system::error_code ErrorCode;
 }
 
 

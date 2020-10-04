@@ -17,7 +17,6 @@ namespace mqtt {
         typedef std::unique_ptr<Timer> AutoPtr;
 
     private:
-        boost::posix_time::seconds _seconds;
         boost::asio::deadline_timer _timer;
         std::function<void()> _callback;
     private:

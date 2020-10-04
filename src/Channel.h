@@ -7,34 +7,47 @@
 
 #include <boost/asio.hpp>
 #include "Future.h"
+#include "UserStd.h"
+#include <memory>
+#include <message/Message.h>
 
 namespace mqtt {
 
+    class Channel {
+    public:
+        virtual void write(const message::Message::Ptr& msg, FutureListenerErrorCode listener) = 0;
+    };
+
     class ChannelContext {
     public:
-        virtual boost::asio::io_service& getIoService() = 0;
-        virtual boost::asio::ip::tcp::socket& getSocket() = 0;
-        virtual const boost::system::error_code& getErrorCode() = 0;
+        virtual boost::asio::io_service &getIoService() = 0;
+
+        virtual Channel &getChannel() = 0;
+
+        virtual const boost::system::error_code &getErrorCode() = 0;
+
         virtual std::size_t getSize() = 0;
     };
 
     class DefaultChannelContext : public ChannelContext {
     private:
-        boost::asio::io_service& _service;
-        boost::asio::ip::tcp::socket& _socket;
-        const boost::system::error_code& _errorCode;
+        boost::asio::io_service &_service;
+        Channel &_channel;
+        const boost::system::error_code &_errorCode;
         std::size_t _size;
     public:
-        DefaultChannelContext(boost::asio::io_service &service, boost::asio::ip::tcp::socket &socket,
-                              const boost::system::error_code &errorCode, size_t size) : _service(service), _socket(socket),
-                                                                                   _errorCode(errorCode), _size(size) {}
+        DefaultChannelContext(boost::asio::io_service &service, Channel &channel,
+                              const boost::system::error_code &errorCode, size_t size) : _service(service),
+                                                                                         _channel(channel),
+                                                                                         _errorCode(errorCode),
+                                                                                         _size(size) {}
 
         boost::asio::io_service &getIoService() override {
             return _service;
         }
 
-        boost::asio::ip::tcp::socket &getSocket() override {
-            return _socket;
+        Channel &getChannel() override {
+            return _channel;
         }
 
         const boost::system::error_code &getErrorCode() override {
@@ -46,17 +59,27 @@ namespace mqtt {
         }
     };
 
-    class ChannelInboundHandler {
+    class ChannelHandler {
     public:
-        virtual void channelActive(ChannelContext& ctx) = 0;
-        virtual void channelInactive(ChannelContext& ctx) = 0;
-        virtual void channelReadComplete(ChannelContext& ctx) = 0;
+        typedef std::shared_ptr<ChannelHandler> Ptr;
+
+        virtual ~ChannelHandler() = default;
     };
 
-    template<typename T>
-    class ChannelOutboundHandler {
+    class ChannelInboundHandler : virtual public ChannelHandler {
     public:
-        virtual void write(ChannelContext& ctx, T msg, Future future) = 0;
+        virtual void channelActive(ChannelContext &ctx) = 0;
+
+        virtual void channelInactive(ChannelContext &ctx) = 0;
+
+        virtual void channelReadComplete(ChannelContext &ctx) = 0;
+
+        virtual void onMessage(ChannelContext &ctx, const message::Message::Ptr& message) = 0;
+    };
+
+    class ChannelOutboundHandler : virtual public ChannelHandler {
+    public:
+        virtual void channelWriteComplete(ChannelContext &ctx) = 0;
     };
 
 }

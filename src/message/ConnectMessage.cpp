@@ -84,4 +84,6 @@ namespace mqtt::message {
     void ConnectMessage::setPassword(const std::string &password) {
         _password = password;
     }
+
+    ConnectMessage::ConnectMessage(const std::string &clientId) : Message(MQTT_MSG_CONNECT), _clientId(clientId) {}
 }

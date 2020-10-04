@@ -8,19 +8,15 @@
 #include <vector>
 #include <string>
 #include "Message.h"
+#include "MessagePacketIdentifier.h"
 
 namespace mqtt::message {
 
-    class UnSubscribeMessage : public Message {
+    class UnSubscribeMessage : public Message, public MessagePacketIdentifier {
     private:
-        uint16_t _packetIdentifier;
         std::vector<std::string> _topicFilters;
     public:
         UnSubscribeMessage() : Message(MQTT_MSG_UNSUBSCRIBE) { }
-
-        [[nodiscard]] uint16_t getPacketIdentifier() const;
-
-        void setPacketIdentifier(uint16_t packetIdentifier);
 
         [[nodiscard]] const std::vector<std::string> &getTopicFilters() const;
 

@@ -6,18 +6,17 @@
 #define MQTT_PUBLISHMESSAGE_H
 
 #include "Message.h"
+#include "MessagePacketIdentifier.h"
 
 #include <string>
 #include <vector>
 
 namespace mqtt::message {
 
-    class PublishMessage : public Message {
+    class PublishMessage : public Message, public MessagePacketIdentifier {
     private:
         std::string _topic;
         std::vector<uint8_t> _message;
-
-        uint16_t _packetIdentifier{};
     public:
         PublishMessage(const std::string &topic, uint16_t packetIdentifier);
 
@@ -34,10 +33,6 @@ namespace mqtt::message {
         void setMessage(const std::vector<uint8_t> &message);
         void setMessage(const uint8_t* message, size_t size);
         void setMessage(const std::string& message);
-
-        [[nodiscard]] uint16_t getPacketIdentifier() const;
-
-        void setPacketIdentifier(uint16_t packetIdentifier);
     };
 
 }

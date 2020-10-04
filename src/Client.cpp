@@ -5,7 +5,7 @@
 #include "Client.h"
 
 #include <utility>
-#include <iostream>
+#include "logging/Logger.h"
 
 using namespace boost;
 using namespace boost::asio;
@@ -21,8 +21,25 @@ namespace mqtt {
 
     void Client::startConnect() {
         _socket.async_connect(_endpoint, [this](const boost::system::error_code &err) {
-            DefaultChannelContext ctx(_service, _socket, err, 0);
-            this->channelActive(ctx);
+            if (!_socket.is_open() || err) {
+                if (!_socket.is_open()) {
+                    //MQTT_LOG(info) << "Connect timed out";
+                } else {
+                    //MQTT_LOG(info) << "Connect error: " << err.message();
+                    _socket.close();
+                }
+
+                _restartTimer = std::make_unique<Timer>(_service, 10, [this]() { this->startConnect(); });
+            } else {
+                MQTT_LOG(info) << "Connected!";
+                _status = ACTIVE;
+
+                startRead();
+
+                DefaultChannelContext ctx(_service, *this, err, 0);
+                this->channelActive(ctx);
+            }
+
         });
     }
 
@@ -30,53 +47,33 @@ namespace mqtt {
         _socket.async_read_some(
                 boost::asio::buffer(_incBuf),
                 [this](const boost::system::error_code &err, std::size_t size) {
-                    DefaultChannelContext ctx(_service, _socket, err, size);
+                    DefaultChannelContext ctx(_service, *this, err, size);
                     this->channelReadComplete(ctx);
                 }
         );
     }
 
-    bool Client::checkError(const system::error_code &err) {
-        if (err.failed()) {
+    bool Client::checkError(ChannelContext &ctx) {
+        if (ctx.getErrorCode().failed()) {
+            channelInactive(ctx);
             startConnect();
         }
 
-        return err.failed();
-    }
-    void Client::onWrite(const boost::system::error_code &err, std::size_t size) {
-        checkError(err);
+        return ctx.getErrorCode().failed();
     }
 
-    void Client::send(message::Message::Ptr msg, FutureListener listener) {
-        _encoder.encode(_out, std::move(msg));
-
-        async_write(_socket, _out, [listener](boost::system::error_code errorCode, std::size_t size) {
-            if (listener != nullptr) {
-                listener(SystemFuture(errorCode));
-            }
-        });
-    }
-
-    void Client::post(message::Message::Ptr msg) {
-        send(std::move(msg), nullptr);
-    }
-
-    void Client::onMessage(message::Message::Ptr msg) {
+    void Client::onMessage(ChannelContext &ctx, const message::Message::Ptr& msg) {
+        MQTT_LOG(info) << "Recv: " << mqttMsgName(msg->getType());
         switch (msg->getType()) {
             case MQTT_MSG_CONNACK: {
                 auto ack = (ConnAckMessage *) msg.get();
                 if (ack->getReasonCode()) {
-                    std::cout << "Failed: " << ack->getReasonCode() << std::endl;
+                    MQTT_LOG(error) << "Failed: " << ack->getReasonCode();
                 } else {
                     _status = CONNECTED;
-                    std::cout << "Connected TO MQTT" << std::endl;
-                    heartBeat();
+                    MQTT_LOG(info) << "Connected TO MQTT";
+                    _pipeline.channelActive(ctx);
                 }
-            }
-                break;
-            case MQTT_MSG_PINGRESP: {
-                std::cout << "Pong MQTT" << std::endl;
-                heartBeat();
             }
                 break;
             case MQTT_MSG_DISCONNECT: {
@@ -85,61 +82,70 @@ namespace mqtt {
             }
                 break;
         }
-    }
 
-    void Client::heartBeat() {
-        if (_status != CONNECTED) {
-            return;
-        }
-        _pingTimer = std::make_unique<Timer>(_service, 5, [this]() {
-            std::cout << "Ping MQTT" << std::endl;
-            post(std::make_shared<PingReqMessage>());
-        });
+        _pipeline.onMessage(ctx, msg);
     }
 
     void Client::channelActive(ChannelContext &ctx) {
-        if (!ctx.getSocket().is_open() || ctx.getErrorCode()) {
-            if (!_socket.is_open()) {
-                std::cout << "Connect timed out\n";
-            } else {
-                std::cout << "Connect error: " << ctx.getErrorCode().message() << "\n";
-                _socket.close();
-            }
-
-            _restartTimer = std::make_unique<Timer>(ctx.getIoService(), 10, [this]() { this->startConnect(); });
-        } else {
-            std::cout << "Connected!" << std::endl;
-            _status = ACTIVE;
-
-            auto connMsg = std::make_shared<ConnectMessage>();
-            connMsg->setClientId("Rover");
-            post(connMsg);
-
-            startRead();
-        }
+        write(std::make_shared<ConnectMessage>("Rover"), nullptr);
     }
 
     void Client::channelInactive(ChannelContext &ctx) {
-
+        MQTT_LOG(info) << "Disconnected!";
+        _pipeline.channelInactive(ctx);
     }
 
     void Client::channelReadComplete(ChannelContext &ctx) {
         if (ctx.getErrorCode()) {
-            std::cout << "OnRead: " << ctx.getErrorCode().message() << std::endl;
-            startConnect();
+            MQTT_LOG(info) << "OnRead Failed: " << ctx.getErrorCode().message() << ", " << ctx.getSize();
+            asio::dispatch(_service, [this]() { startConnect(); });
+            return;
         }
+
         if (ctx.getSize()) {
             _inc.sputn((const char *) _incBuf.data(), ctx.getSize());
 
             try {
                 while (_inc.size()) {
-                    onMessage(_decoder.decode(_inc));
+                    onMessage(ctx, _decoder.decode(_inc));
                 }
             } catch (std::exception &ex) {
                 // catch segmented messages
             }
         }
 
+        _pipeline.channelReadComplete(ctx);
+
         startRead();
+
+    }
+
+    void Client::write(const message::Message::Ptr& msg, FutureListenerErrorCode listener) {
+        asio::dispatch(_service, [this, msg, listener]() {
+            MQTT_LOG(info) << "Send: " << mqttMsgName(msg->getType());
+
+            auto identifier = dynamic_cast<MessagePacketIdentifier*>(msg.get());
+            if (identifier) {
+                identifier->setPacketIdentifier(++_packetIdentifier);
+            }
+
+            _encoder.encode(_out, msg);
+
+            PromiseErrorCode promise;
+            async_write(_socket, _out, [this, listener, promise = std::move(promise)](const ErrorCode& errorCode, std::size_t size) mutable {
+                DefaultChannelContext ctx(_service, *this, errorCode, size);
+                this->channelWriteComplete(ctx);
+
+                if (listener != nullptr) {
+                    promise.set_value(errorCode);
+                    listener(promise.get_future());
+                }
+            });
+        });
+    }
+
+    void Client::channelWriteComplete(ChannelContext &ctx) {
+        checkError(ctx);
+        _pipeline.channelWriteComplete(ctx);
     }
 }

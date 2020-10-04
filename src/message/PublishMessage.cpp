@@ -6,8 +6,9 @@
 
 namespace mqtt::message {
     PublishMessage::PublishMessage(const std::string &topic, uint16_t packetIdentifier)
-            : Message(MQTT_MSG_PUBLISH), _topic(topic), _packetIdentifier(packetIdentifier) {
+            : Message(MQTT_MSG_PUBLISH), _topic(topic) {
         setRetain(true);
+        setPacketIdentifier(packetIdentifier);
     }
 
 
@@ -17,14 +18,6 @@ namespace mqtt::message {
 
     void PublishMessage::setTopic(const std::string &topic) {
         _topic = topic;
-    }
-
-    [[maybe_unused]] uint16_t PublishMessage::getPacketIdentifier() const {
-        return _packetIdentifier;
-    }
-
-    void PublishMessage::setPacketIdentifier(uint16_t packetIdentifier) {
-        _packetIdentifier = packetIdentifier;
     }
 
     const std::vector<uint8_t> &PublishMessage::getMessage() const {

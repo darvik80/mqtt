@@ -7,14 +7,12 @@
 
 namespace mqtt {
     Timer::Timer(boost::asio::io_service &service, int seconds, std::function<void()> callback)
-            : _seconds(seconds), _timer(service, boost::posix_time::seconds(seconds)), _callback(callback) {
+            : _timer(service, boost::posix_time::seconds(seconds)), _callback(callback) {
         _timer.async_wait([this](const boost::system::error_code& err) { this->onTimer(err); });
     }
 
     void Timer::onTimer(const boost::system::error_code& err) {
-        if (err) {
-            std::cout << err.message() << std::endl;
-        } else {
+        if (!err) {
             _callback();
         }
     }

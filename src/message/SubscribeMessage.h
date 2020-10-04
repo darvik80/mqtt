@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "Message.h"
+#include "MessagePacketIdentifier.h"
 
 namespace mqtt::message {
 
@@ -29,17 +30,11 @@ namespace mqtt::message {
         [[nodiscard]] uint8_t getQos() const;
     };
 
-    class SubscribeMessage : public Message {
+    class SubscribeMessage : public Message, public MessagePacketIdentifier {
     private:
-        uint16_t _packetIdentifier{};
-
         std::vector<SubscribePayload> _topics;
     public:
         SubscribeMessage() : Message(MQTT_MSG_SUBSCRIBE) { }
-
-        [[nodiscard]] uint16_t getPacketIdentifier() const;
-
-        void setPacketIdentifier(uint16_t packetIdentifier);
 
         [[nodiscard]] const std::vector<SubscribePayload> &getTopics() const;
 

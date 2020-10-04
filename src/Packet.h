@@ -8,7 +8,7 @@
 #include "Properties.h"
 
 namespace mqtt {
-    enum MQTT_MSG_TYPE {
+    enum MqttMessageType {
         MQTT_MSG_RESERVED,
         MQTT_MSG_CONNECT,       // К* -> С**	    connection requests
         MQTT_MSG_CONNACK,       // К <- С	        connection confirmed
@@ -26,6 +26,8 @@ namespace mqtt {
         MQTT_MSG_DISCONNECT,    // К -> С           disconnect
         MQTT_MSG_RESERVED_DONE
     };
+
+    const char *mqttMsgName(uint8_t type);
 
     union Header {
         uint8_t all;

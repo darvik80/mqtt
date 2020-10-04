@@ -27,6 +27,8 @@ namespace mqtt::message {
     public:
         ConnectMessage() : Message(MQTT_MSG_CONNECT){ }
 
+        ConnectMessage(const std::string &clientId);
+
         [[nodiscard]] const std::string &getProtocolName() const;
 
         void setProtocolName(const std::string &protocolName);

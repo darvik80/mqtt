@@ -20,14 +20,6 @@ namespace mqtt::message {
         _requestedQos.all = qos;
     }
 
-    uint16_t SubscribeMessage::getPacketIdentifier() const {
-        return _packetIdentifier;
-    }
-
-    void SubscribeMessage::setPacketIdentifier(uint16_t packetIdentifier) {
-        _packetIdentifier = packetIdentifier;
-    }
-
     const std::vector<SubscribePayload> &SubscribeMessage::getTopics() const {
         return _topics;
     }

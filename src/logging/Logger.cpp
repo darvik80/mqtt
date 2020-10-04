@@ -15,24 +15,28 @@ using namespace boost;
 
 namespace mqtt::logging {
 
-
-    void Logger::init() {
+    void Logger::init(const LoggerProperties &props) {
         log::register_simple_formatter_factory<log::trivial::severity_level, char>("Severity");
 
-        log::add_file_log(
-                log::keywords::file_name = "mqtt.log",
-                log::keywords::format = "[%TimeStamp%] [%ThreadID%] [%Severity%] [%LineID%] %Message%"
-        );
+        if (props.file) {
+            log::add_file_log(
+                    log::keywords::file_name = props.fileName,
+                    log::keywords::rotation_size = 10 * 1024 * 1024,
+                    log::keywords::time_based_rotation = log::sinks::file::rotation_at_time_point(0, 0, 0),
+                    log::keywords::format = "[%TimeStamp%] [%ThreadID%] [%Severity%] %Message%",
+                    log::keywords::auto_flush = true
+            );
+        }
 
-
-        log::add_console_log(
-                std::cout,
-                log::keywords::format = "[%TimeStamp%] [%ThreadID%] [%Severity%] %Message%"
-        );
-
+        if (props.console) {
+            log::add_console_log(
+                    std::cout,
+                    log::keywords::format = "[%TimeStamp%] [%ThreadID%] [%Severity%] %Message%"
+            );
+        }
 
         log::core::get()->set_filter(
-                log::trivial::severity >= log::trivial::info
+                log::trivial::severity >= props.level
         );
 
         log::add_common_attributes();

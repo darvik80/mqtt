@@ -11,10 +11,17 @@
 
 namespace mqtt::logging {
 
-class Logger {
-public:
-    static void init();
-};
+    struct LoggerProperties {
+        boost::log::trivial::severity_level level;
+        bool console;
+        bool file;
+        std::string fileName;
+    };
+
+    class Logger {
+    public:
+        static void init(const LoggerProperties& props);
+    };
 
 }
 

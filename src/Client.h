@@ -16,23 +16,14 @@
 #include "Timer.h"
 #include "Future.h"
 #include "Channel.h"
+#include "ChannelPipeline.h"
 
 namespace mqtt {
-
-    class SubscribeCallback {
-    public:
-        typedef std::shared_ptr<SubscribeCallback> Ptr;
-    public:
-        virtual void onData(const std::vector<uint8_t> &data) = 0;
-    };
 
     struct ClientProperties {
         std::string address;
         int port;
     };
-
-
-    typedef void (*FutureListener)(const Future &future);
 
     enum ConnectionStatus {
         IDLE,
@@ -40,7 +31,7 @@ namespace mqtt {
         CONNECTED,
     };
 
-    class Client : public ChannelInboundHandler {
+    class Client : public Channel, public ChannelInboundHandler, public ChannelOutboundHandler {
     private:
         ConnectionStatus _status{IDLE};
         boost::asio::io_service &_service;
@@ -52,37 +43,37 @@ namespace mqtt {
         boost::asio::streambuf _out;
 
         Timer::AutoPtr _restartTimer;
-        Timer::AutoPtr _pingTimer;
-
         Encoder _encoder;
         Decoder _decoder;
+
+        ChannelPipeline _pipeline;
+
+        uint16_t _packetIdentifier{0};
     private:
-        void onRead(const boost::system::error_code &err, std::size_t size);
-
-        void onWrite(const boost::system::error_code &err, std::size_t size);
-
         void startConnect();
 
         void startRead();
 
-        void heartBeat();
-
-        bool checkError(const boost::system::error_code &err);
-
-        void onMessage(message::Message::Ptr msg);
+        bool checkError(ChannelContext &ctx);
 
     public:
         Client(boost::asio::io_service &service, const ClientProperties &props);
 
-        void send(message::Message::Ptr msg, FutureListener listener);
-
-        void post(message::Message::Ptr msg);
+        ChannelPipeline& getPipeline() {
+            return _pipeline;
+        }
 
         void channelActive(ChannelContext &ctx) override;
 
         void channelInactive(ChannelContext &ctx) override;
 
         void channelReadComplete(ChannelContext &ctx) override;
+
+        void channelWriteComplete(ChannelContext &ctx) override;
+
+        void onMessage(ChannelContext &ctx, const message::Message::Ptr& msg) override;
+    public:
+        void write(const message::Message::Ptr& msg, FutureListenerErrorCode listener) override;
     };
 }
 
