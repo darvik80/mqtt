@@ -15,8 +15,6 @@ int main() {
     mqtt::logging::LoggerProperties logProps {boost::log::trivial::debug, true, true, "mqtt.log"};
     mqtt::logging::Logger::init(logProps);
 
-    MQTT_LOG(info) << "Hello world!!!";
-
     boost::asio::io_service service;
 
     boost::asio::signal_set signals(service, SIGINT, SIGTERM, SIGQUIT);
@@ -50,7 +48,7 @@ int main() {
     auto producer = std::make_shared<DefaultProducer>(client);
 
     Timer timer(service, 20, [producer]() {
-        producer->publish("/test/*", "Hello World");
+        producer->publish("/test/*", "Publish Message!");
     });
     service.run();
     return 0;

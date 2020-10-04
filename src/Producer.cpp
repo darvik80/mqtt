@@ -16,5 +16,21 @@ namespace mqtt {
         _client.write(pubMsg, nullptr);
     }
 
+    void DefaultProducer::channelActive(ChannelContext &ctx) {
+
+    }
+
+    void DefaultProducer::channelInactive(ChannelContext &ctx) {
+
+    }
+
+    void DefaultProducer::channelReadComplete(ChannelContext &ctx) {
+
+    }
+
+    void DefaultProducer::onMessage(ChannelContext &ctx, const message::Message::Ptr &message) {
+
+    }
+
 
 }

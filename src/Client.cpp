@@ -23,9 +23,9 @@ namespace mqtt {
         _socket.async_connect(_endpoint, [this](const boost::system::error_code &err) {
             if (!_socket.is_open() || err) {
                 if (!_socket.is_open()) {
-                    //MQTT_LOG(info) << "Connect timed out";
+                    MQTT_LOG(info) << "Connect timed out";
                 } else {
-                    //MQTT_LOG(info) << "Connect error: " << err.message();
+                    MQTT_LOG(info) << "Connect error: " << err.message();
                     _socket.close();
                 }
 

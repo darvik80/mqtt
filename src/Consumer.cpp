@@ -36,7 +36,17 @@ namespace mqtt {
         }
 
         if (msg->getType() == MQTT_MSG_PUBLISH) {
-            _callback(dynamic_cast<message::PublishMessage*>(msg.get()));
+            auto pub = dynamic_cast<message::PublishMessage*>(msg.get());
+            uint32_t code = _callback(pub);
+            if (code == 0) {
+                if (pub->getHeader().bits.qos == 1) {
+                    auto pubAck = std::make_shared<message::PubAckMessage>();
+                    pubAck->setPacketIdentifier(pub->getPacketIdentifier());
+                    ctx.getChannel().write(pubAck, nullptr);
+                } else if (pub->getHeader().bits.qos == 2) {
+                        //TODO: implement support qos: 2
+                    }
+            }
         }
     }
 }
