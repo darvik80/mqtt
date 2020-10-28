@@ -25,6 +25,11 @@ int main() {
         }
     });
 
+    MQTT_LOG(info) << "Hello World!!!";
+    MQTT_LOG(warning) << "This is fine";
+    MQTT_LOG(error) << "System down";
+    MQTT_LOG(debug) << "All is fine";
+
     mqtt::ClientProperties properties{
             "192.168.100.3",
             1883
