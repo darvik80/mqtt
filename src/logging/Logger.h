@@ -6,21 +6,15 @@
 #define MQTT_LOGGER_H
 
 #include <boost/log/trivial.hpp>
+#include "properties/LoggerProperties.h"
 
 #define MQTT_LOG(level)  BOOST_LOG_TRIVIAL(level)
 
 namespace mqtt::logging {
 
-    struct LoggerProperties {
-        boost::log::trivial::severity_level level;
-        bool console;
-        bool file;
-        std::string fileName;
-    };
-
     class Logger {
     public:
-        static void init(const LoggerProperties& props);
+        static void init(const properties::LoggerProperties& props);
     };
 
 }

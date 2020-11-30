@@ -5,6 +5,8 @@
 #ifndef MQTT_CLIENT_H
 #define MQTT_CLIENT_H
 
+#include "properties/ClientProperties.h"
+
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio.hpp>
@@ -20,25 +22,28 @@
 
 namespace mqtt {
 
-    struct ClientProperties {
-        std::string address;
-        int port;
-    };
-
     enum ConnectionStatus {
         IDLE,
         ACTIVE,
         CONNECTED,
     };
 
-    class Client : public Channel, public ChannelInboundHandler, public ChannelOutboundHandler {
-    private:
-        ConnectionStatus _status{IDLE};
-        boost::asio::io_service &_service;
-        boost::asio::ip::tcp::endpoint _endpoint;
-        boost::asio::ip::tcp::socket _socket;
+    class MqttClient {
+    public:
+        virtual void post(const message::Message::Ptr& msg, FutureListenerErrorCode listene) = 0;
+        virtual void onMessage(const message::Message::Ptr& msg) = 0;
+    };
 
-        std::vector<uint8_t> _incBuf;
+    class Client : public MqttClient {
+    private:
+        properties::ClientProperties _props;
+
+        ConnectionStatus _status{IDLE};
+        IoService &_service;
+        TcpEndpoint _endpoint;
+        TcpSocket _socket;
+
+        ByteBuffer _incBuf;
         boost::asio::streambuf _inc;
         boost::asio::streambuf _out;
 
@@ -46,34 +51,24 @@ namespace mqtt {
         Encoder _encoder;
         Decoder _decoder;
 
-        ChannelPipeline _pipeline;
-
         uint16_t _packetIdentifier{0};
     private:
         void startConnect();
-
         void startRead();
 
-        bool checkError(ChannelContext &ctx);
-
     public:
-        Client(boost::asio::io_service &service, const ClientProperties &props);
+        Client(boost::asio::io_service &service, const properties::ClientProperties &props);
 
-        ChannelPipeline& getPipeline() {
-            return _pipeline;
-        }
+        void channelActive();
 
-        void channelActive(ChannelContext &ctx) override;
+        void channelInactive(const ErrorCode &err);
 
-        void channelInactive(ChannelContext &ctx) override;
+        void channelReadComplete(const ErrorCode &err, size_t readSize);
 
-        void channelReadComplete(ChannelContext &ctx) override;
-
-        void channelWriteComplete(ChannelContext &ctx) override;
-
-        void onMessage(ChannelContext &ctx, const message::Message::Ptr& msg) override;
+        void channelWriteComplete(const ErrorCode &err, size_t writeSize);
     public:
-        void write(const message::Message::Ptr& msg, FutureListenerErrorCode listener) override;
+        void post(const message::Message::Ptr& msg, FutureListenerErrorCode listener) override;
+        void onMessage(const message::Message::Ptr& msg) override;
     };
 }
 
