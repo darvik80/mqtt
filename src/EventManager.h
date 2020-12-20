@@ -15,26 +15,25 @@ namespace mqtt {
     class EventSubscriber {
     public:
         typedef std::shared_ptr<EventSubscriber> Ptr;
-
-        virtual ~EventSubscriber() = default;;
+        virtual ~EventSubscriber() = default;
     };
 
-    class EventChannelActiveSubscriber {
+    class EventChannelActiveSubscriber : virtual public EventSubscriber {
     public:
         virtual void onEvent(const EventChannelActive &event) = 0;
     };
 
-    class EventChannelInactiveSubscriber {
+    class EventChannelInactiveSubscriber : virtual public EventSubscriber {
     public:
         virtual void onEvent(const EventChannelInactive &event) = 0;
     };
 
-    class EventChannelMessageSubscriber {
+    class EventChannelMessageSubscriber : virtual public EventSubscriber {
     public:
         virtual void onEvent(const EventChannelMessage &event) = 0;
     };
 
-    class DefaultEventChannelSubscriber : public EventSubscriber, public EventChannelActiveSubscriber, public EventChannelInactiveSubscriber, public EventChannelMessageSubscriber {
+    class DefaultEventChannelSubscriber : public EventChannelActiveSubscriber, public EventChannelInactiveSubscriber, public EventChannelMessageSubscriber {
     public:
         void onEvent(const EventChannelActive &event) override {
             MQTT_LOG(info) << "Handle channel active";

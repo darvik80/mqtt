@@ -26,6 +26,7 @@ namespace mqtt {
     class MqttConnection {
     public:
         virtual void post(const message::Message::Ptr& msg, FutureListenerErrorCode listene) = 0;
+        //virtual FutureErrorCode post(const message::Message::Ptr& msg) = 0;
         virtual void onMessage(const message::Message::Ptr& msg) = 0;
     };
 
@@ -63,6 +64,7 @@ namespace mqtt {
     public:
         explicit Connection(const properties::ConnectionProperties &props);
         void post(const message::Message::Ptr& msg, FutureListenerErrorCode listener) override;
+        //void post(const message::Message::Ptr& msg, PromiseErrorCode& promise) override;
         void onMessage(const message::Message::Ptr& msg) override;
     public: // Getters
         EventManager &getEventManager();

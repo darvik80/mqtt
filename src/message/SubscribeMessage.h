@@ -30,6 +30,12 @@ namespace mqtt::message {
         [[nodiscard]] uint8_t getQos() const;
     };
 
+    enum QoS {
+        QOS_AT_MOST_ONCE,
+        QOS_AT_LEAST_ONCE,
+        QOS_EXACTLY_ONCE,
+    };
+
     class SubscribeMessage : public Message, public MessagePacketIdentifier {
     private:
         std::vector<SubscribePayload> _topics;

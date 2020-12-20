@@ -172,4 +172,30 @@ namespace mqtt {
     EventManager &Connection::getEventManager() {
         return _eventManager;
     }
+
+    /*
+    void Connection::post(const message::Message::Ptr& msg, PromiseErrorCode& promise) {
+        asio::dispatch(IoServiceHolder::get_mutable_instance(), [this, msg, promise]() {
+            MQTT_LOG(info) << name() << " Send: " << _props.address << ":" << _props.port << ", " << mqttMsgName(msg->getType());
+
+            auto identifier = dynamic_cast<MessagePacketIdentifier *>(msg.get());
+            if (identifier) {
+                identifier->setPacketIdentifier(++_packetIdentifier);
+            }
+
+            _encoder.encode(_out, msg);
+
+            PromiseErrorCode promise;
+            async_write(_socket, _out, [this, listener, promise = std::move(promise)](const ErrorCode &errorCode, std::size_t size) mutable {
+
+                if (listener != nullptr) {
+                    promise.set_value(errorCode);
+                    listener(promise.get_future());
+                }
+
+                channelWriteComplete(errorCode, size);
+            });
+        });
+    }
+     */
 }
