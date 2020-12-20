@@ -83,7 +83,7 @@ namespace mqtt {
         res += writer.writeUint16(message.getKeepAlive(), out);
 
         /// 3.1.3 Payload
-        /// 3.1.3.1 Client Id
+        /// 3.1.3.1 Connection Id
         res += writer.writeString(message.getClientId(), out);
 
         if (message.getFlags().bits.willFlag) {

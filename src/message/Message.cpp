@@ -9,6 +9,9 @@ namespace mqtt::message {
         _header.bits.type = type;
     }
 
+    const char *Message::getTypeStr() const {
+        return mqttMsgName(getType());
+    }
 
     const Header &Message::getHeader() const {
         return _header;

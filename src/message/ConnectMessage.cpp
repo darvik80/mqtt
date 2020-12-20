@@ -74,6 +74,7 @@ namespace mqtt::message {
     }
 
     void ConnectMessage::setUserName(const std::string &userName) {
+        _flags.bits.username = !userName.empty();
         _userName = userName;
     }
 
@@ -82,6 +83,7 @@ namespace mqtt::message {
     }
 
     void ConnectMessage::setPassword(const std::string &password) {
+        _flags.bits.password = !password.empty();
         _password = password;
     }
 

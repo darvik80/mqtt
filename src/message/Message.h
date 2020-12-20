@@ -34,6 +34,8 @@ namespace mqtt::message {
             return _header.bits.type;
         }
 
+        [[nodiscard]] virtual const char* getTypeStr() const;
+
         [[nodiscard]] const Header &getHeader() const;
 
         void setHeader(uint8_t header);

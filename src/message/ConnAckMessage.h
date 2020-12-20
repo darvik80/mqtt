@@ -8,6 +8,14 @@
 #include <message/Message.h>
 
 namespace mqtt::message {
+    enum ConnRespCode {
+        RESP_CODE_ACCEPTED,                         // Connection accepted
+        RESP_CODE_UNACCEPTABLE_PROTOCOL_VERSION,    // Connection refused, unacceptable protocol version
+        RESP_CODE_IDENTIFIER_REJECTED,              // Connection refused, identifier rejected
+        RESP_CODE_SERVER_UNAVAILABLE,               // Connection refused, server unavailable
+        RESP_CODE_BAD_USER_NAME_OR_PASSWORD,        // Connection refused, bad user name or password
+        RESP_CODE_NOT_AUTHORIZED,                   // Connection refused, not authorized
+    };
 
     class ConnAckMessage : public Message {
     private:
@@ -23,6 +31,7 @@ namespace mqtt::message {
         ConnAckMessage() : Message(MQTT_MSG_CONNACK){ }
 
         [[nodiscard]] uint8_t getReasonCode() const;
+        const char* getReasonCodeDescription() const;
 
         void setReasonCode(uint8_t rc);
 

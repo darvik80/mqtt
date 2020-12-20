@@ -39,23 +39,18 @@ namespace mqtt {
         } bits;
     };
 
-    struct Flags {
-        union {
-            uint8_t all;
-
-            struct {
-                union {
-                    int : 1;                    /**< unused */
-                    bool cleanSession: 1;        /**< cleansession flag */
-                    bool willFlag: 1;              /**< will flag */
-                    unsigned int willQoS: 2;   /**< will QoS value */
-                    bool willRetain: 1;        /**< will retain setting */
-                    bool password: 1;          /**< 3.1 password */
-                    bool username: 1;          /**< 3.1 user name */
-                };
-            } bits;
-        };
-    };
+    typedef union {
+        uint8_t all;
+        struct {
+            int reserved: 1;                    /**< unused */
+            bool cleanSession: 1;        /**< cleansession flag */
+            bool willFlag: 1;              /**< will flag */
+            unsigned int willQoS: 2;   /**< will QoS value */
+            bool willRetain: 1;        /**< will retain setting */
+            bool password: 1;          /**< 3.1 password */
+            bool username: 1;          /**< 3.1 user name */
+        } bits;
+    } Flags;
 }
 
 #endif //MQTT_PACKET_H

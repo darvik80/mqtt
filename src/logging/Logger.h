@@ -12,12 +12,12 @@
 
 namespace mqtt::logging {
 
-    class Logger {
-    public:
-        static void init(const properties::LoggerProperties& props);
-    };
+        class Logger {
+        public:
+            static void init(const properties::LoggerProperties &props);
+        };
 
-}
+    }
 
 
 #endif //MQTT_LOGGER_H

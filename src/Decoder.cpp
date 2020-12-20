@@ -94,7 +94,7 @@ namespace mqtt {
 
         /// 3.1.2.10 Keep Alive
         msg->setKeepAlive(reader.readUint16(inc));
-        /// 3.1.3.1 Client Identifier
+        /// 3.1.3.1 Connection Identifier
         msg->setClientId(reader.readString(inc));
 
         if (msg->getFlags().bits.willFlag) {

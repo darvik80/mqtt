@@ -1,23 +1,35 @@
 //
-// Created by Ivan Kishchenko on 27.09.2020.
+// Created by Ivan Kishchenko on 19.12.2020.
 //
 
 #include "Timer.h"
-#include <iostream>
+#include "logging/Logger.h"
+
 
 namespace mqtt {
-    Timer::Timer(boost::asio::io_service &service, int seconds, std::function<void()> callback)
-            : _timer(service, boost::posix_time::seconds(seconds)), _callback(callback) {
-        _timer.async_wait([this](const boost::system::error_code& err) { this->onTimer(err); });
+    Timer::Timer(std::string_view name, const Runnable &callback, const PosixDuration &duration)
+            : Component(name), _timer(IoServiceHolder::get_mutable_instance()), _callback(callback)
+            , _duration(duration) {
+
     }
 
-    void Timer::onTimer(const boost::system::error_code& err) {
-        if (!err) {
-            _callback();
-        }
+    void Timer::reset() {
+        _timer.expires_from_now(_duration);
+        _timer.async_wait([this](const ErrorCode &err) {
+            if (!err) {
+                _callback();
+                reset();
+            } else {
+                MQTT_LOG(debug) << "Timer " << name() << " canceled";
+            }
+        });
+    }
+
+    void Timer::cancel() {
+        _timer.cancel();
     }
 
     Timer::~Timer() {
         _timer.cancel();
-    }
+    };
 }

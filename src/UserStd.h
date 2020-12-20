@@ -6,8 +6,11 @@
 #define MQTT_USERSTD_H
 
 #include <vector>
-#include <boost/asio/io_service.hpp>
 #include <memory>
+#include <boost/serialization/singleton.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 namespace mqtt {
     typedef std::vector<uint8_t> ByteBuffer;
@@ -15,7 +18,6 @@ namespace mqtt {
 
     typedef boost::asio::ip::tcp::endpoint TcpEndpoint;
     typedef boost::asio::ip::tcp::socket TcpSocket;
-
 
     typedef boost::asio::io_service IoService;
     typedef std::shared_ptr<IoService> IoServicePtr;
@@ -31,7 +33,9 @@ namespace mqtt {
     typedef boost::posix_time::seconds PosixSeconds;
     typedef boost::posix_time::microseconds PosixMicroseconds;
 
+    typedef boost::serialization::singleton<IoService> IoServiceHolder;
 
+    typedef const std::function<void()> Runnable;
 }
 
 

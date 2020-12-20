@@ -1,60 +1,36 @@
 #include <iostream>
 
 #include <boost/asio.hpp>
-#include "Client.h"
+#include "Connection.h"
 
 #include "logging/Logger.h"
-#include "IdleStateHandler.h"
-#include "Session.h"
-#include "Consumer.h"
-#include "Producer.h"
+#include "EventManager.h"
 
 using namespace mqtt;
 
 int main() {
-    mqtt::logging::LoggerProperties logProps {boost::log::trivial::debug, true, true, "mqtt.log"};
-    mqtt::logging::Logger::init(logProps);
+    properties::LoggerProperties logProps{boost::log::trivial::info, true, true, "mqtt.log"};
+    logging::Logger::init(logProps);
 
-    boost::asio::io_service service;
-
-    boost::asio::signal_set signals(service, SIGINT, SIGTERM, SIGQUIT);
+    boost::asio::signal_set signals(IoServiceHolder::get_mutable_instance(), SIGINT, SIGTERM, SIGQUIT);
     signals.async_wait([](const boost::system::error_code &error, int signalNumber) {
         if (!error) {
             // A signal occurred.
-            printf("Handle: %d\r\n", signalNumber);
+            MQTT_LOG(info) << "Handle: " << signalNumber;
         }
     });
 
-    MQTT_LOG(info) << "Hello World!!!";
-    MQTT_LOG(warning) << "This is fine";
-    MQTT_LOG(error) << "System down";
-    MQTT_LOG(debug) << "All is fine";
-
-    mqtt::ClientProperties properties{
-            "192.168.100.3",
-            1883
+    properties::ConnectionProperties properties{
+            "149.129.51.54",
+            1883,
+            "darvik",
+            "Selena123"
     };
-    mqtt::Client client(service, properties);
-    auto handler = std::make_shared<mqtt::IdleStateHandler>(0, 0, 5, [&client](mqtt::IdleStateHandler::IdleType idleType) {
-        client.write(std::make_shared<mqtt::message::PingReqMessage>(), [](const FutureErrorCode& errCode) { });
-    });
-    client.getPipeline().addFirst("idle", handler);
+    mqtt::Connection client(properties);
 
-    //Session session(std::vector<>{"/test"});
-    auto consumer = std::make_shared<DefaultConsumer>();
-    consumer->subscribe("/test/*", 0, [](const message::PublishMessage* msg) -> uint32_t {
-        std::string data((const char*)msg->getMessage().data(), msg->getMessage().size());
-        MQTT_LOG(info) << "onData: " << data;
+    EventSubscriber::Ptr subscriber = std::make_shared<DefaultEventChannelSubscriber>();
+    client.getEventManager().subscribe(subscriber);
 
-        return 0;
-    });
-    client.getPipeline().addLast("consumer", consumer);
-
-    auto producer = std::make_shared<DefaultProducer>(client);
-
-    Timer timer(service, 20, [producer]() {
-        producer->publish("/test/*", "Publish Message!");
-    });
-    service.run();
+    IoServiceHolder::get_mutable_instance().run();
     return 0;
 }

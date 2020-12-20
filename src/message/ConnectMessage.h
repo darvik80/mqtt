@@ -14,7 +14,7 @@ namespace mqtt::message {
     private:
         std::string _protocolName{"MQIsdp"};
         uint8_t _protocolLevel{3};
-        Flags _flags{2};
+        Flags _flags{0};
         std::string _clientId{};
         uint16_t _keepAlive{10};
 
