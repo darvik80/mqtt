@@ -1,0 +1,21 @@
+@startuml
+
+class channel {
+    int id;
+    std::string name
+}
+
+class message {
+    int id
+    int userId
+    int channelId
+    std::string context
+}
+
+class agent {
+    int id
+    enum type
+    std::string name
+}
+
+@enduml

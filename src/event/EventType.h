@@ -1,0 +1,17 @@
+//
+// Created by Ivan Kishchenko on 25.12.2020.
+//
+
+#ifndef MQTT_EVENTTYPE_H
+#define MQTT_EVENTTYPE_H
+
+enum EventType {
+    EVENT_CHANNEL_ACTIVE,
+    EVENT_CHANNEL_INACTIVE,
+    EVENT_CHANNEL_MESSAGE,
+
+    EVENT_TOPIC_UNSUBSCRIBE,
+    EVENT_TOPIC_SUBSCRIBE,
+};
+
+#endif //MQTT_EVENTTYPE_H
