@@ -13,8 +13,13 @@
 
 namespace mqtt {
 
-    class DefaultClient : public Client, public EventTopicUnSubscribeHandler, public std::enable_shared_from_this<DefaultClient> {
+    class DefaultClient
+            : public Client,
+              public EventTopicUnSubscribeHandler,
+              public EventChannelMessageHandler,
+              public std::enable_shared_from_this<DefaultClient> {
     private:
+        std::atomic<uint16_t> _pid{0};
         Connection::Ptr _connection;
         EventManager::Ptr _eventManager;
 
@@ -22,9 +27,10 @@ namespace mqtt {
     public:
         DefaultClient(const Connection::Ptr &connection, EventManager::Ptr &eventManager);
 
-        ErrorFuture post(const message::Message::Ptr &msg) override;
+        VoidFuture post(const message::Message::Ptr &msg) override;
 
-        Subscription subscribe(std::string_view topic, uint8_t qos, const std::function<void(const ByteBuffer &)>& callback) override;
+        Subscription subscribe(std::string_view topic, uint8_t qos,
+                               const std::function<void(const ByteBuffer &)> &callback) override;
 
         Publisher publisher(std::string_view topic, uint8_t qos) override;
 
@@ -32,7 +38,13 @@ namespace mqtt {
 
         void onEvent(const EventTopicUnSubscribe &event) override;
 
-        virtual ~DefaultClient();
+        void onEvent(const EventChannelMessage &event) override;
+
+        uint16_t getPacketIdentifier() override {
+            return ++_pid;
+        }
+
+        ~DefaultClient() override;
     };
 
     class Factory {

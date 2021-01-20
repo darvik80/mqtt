@@ -11,15 +11,16 @@ namespace mqtt::message {
         setPacketIdentifier(packetIdentifier);
     }
 
-    PublishMessage::PublishMessage(std::string_view topic, uint8_t qos, std::string_view data)
+    PublishMessage::PublishMessage(std::string_view topic, uint8_t qos, uint16_t packetIdentifier, std::string_view data)
             : Message(MQTT_MSG_PUBLISH), _topic(topic) {
         setRetain(false);
         setQos(qos);
+        setPacketIdentifier(packetIdentifier);
         setMessage((const uint8_t*)data.data(), data.size());
     }
 
 
-    PublishMessage::PublishMessage(std::string_view topic, uint8_t qos, const std::vector<uint8_t>& data)
+    PublishMessage::PublishMessage(std::string_view topic, uint8_t qos, uint16_t packetIdentifier, const std::vector<uint8_t>& data)
             : Message(MQTT_MSG_PUBLISH), _topic(topic) {
         setRetain(false);
         setQos(qos);

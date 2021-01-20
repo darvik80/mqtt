@@ -26,8 +26,6 @@ namespace mqtt {
             if (!err) {
                 _callback();
                 reset();
-            } else {
-                MQTT_LOG(debug) << "Timer " << name() << " canceled";
             }
         });
     }

@@ -20,7 +20,7 @@ namespace mqtt {
                 : _connection(connection) {}
 
 
-        const Connection &getConnection() {
+        const Connection &getConnection() const {
             return _connection;
         }
     };

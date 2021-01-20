@@ -4,33 +4,31 @@
 
 #include <message/SubscribeMessage.h>
 #include <message/SubAckMessage.h>
-#include <event/Event.h>
-#include "SubscribeCommand.h"
+#include <event/EventNetwork.h>
 
+#include <memory>
+#include "SubscribeCommand.h"
 
 namespace mqtt {
 
-    void SubscribeCommand::execute(const std::function<void(const ErrorCode &)> &callback) {
-        auto msg = std::make_shared<message::SubscribeMessage>();
-        msg->addTopic(_topic, _qos);
-        Client::Ptr client = _client;
+    using namespace mqtt::message;
 
-        client->post(msg).then([msg, client, callback](ErrorFuture future) {
-            auto err = future.get();
-            if (!err) {
-                client->getEventManager()->subscribe<EventChannelMessage>([msg, client, callback](const EventChannelMessage &event) -> bool {
-                    auto *ack = dynamic_cast<message::SubAckMessage *>(event.getMessage().get());
-                    if (ack && ack->getPacketIdentifier() == msg->getPacketIdentifier()) {
-                        callback(ErrorCode{});
-                        return false; // disconnect from event
-                    }
+    boost::future<void> SubscribeCommand::execute() {
+        auto promise = std::make_shared<boost::promise<void>>();
+        auto msg = std::make_shared<SubscribeMessage>(_topic, _qos, getPacketIdentifier());
 
-                    return true; // continue receive events
-                });
-
-            } else {
-                callback(err);
+        request<SubscribeMessage, SubAckMessage>(msg).then([promise](boost::future<SubAckMessage> ack) {
+            try {
+                if (ack.get().getReturnCode() > 2) {
+                    promise->set_exception(boost::system::system_error(boost::asio::error::operation_aborted));
+                } else {
+                    promise->set_value();
+                }
+            } catch (boost::system::system_error& ex) {
+                promise->set_exception(ack.get_exception_ptr());
             }
         });
+
+        return promise->get_future();
     }
 }

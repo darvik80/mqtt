@@ -8,30 +8,24 @@
 
 namespace mqtt {
     UnSubscribeCommand::UnSubscribeCommand(const Client::Ptr &client, const std::string_view topic)
-            : _client(client), _topic(topic) {}
+            : Command(client), _topic(topic) {}
 
-    void UnSubscribeCommand::execute(const std::function<void(const ErrorCode &)> &callback) {
-        auto msg = std::make_shared<message::UnSubscribeMessage>();
-        msg->addTopicFilter(_topic);
-        Client::Ptr client = _client;
-        client->post(msg).then([=](ErrorFuture future) {
-            auto err = future.get();
-            if (!err) {
-                client->getEventManager()->subscribe<EventChannelMessage>([=](const EventChannelMessage &event) -> bool {
-                    auto *ack = dynamic_cast<message::UnSubAckMessage *>(event.getMessage().get());
-                    if (ack && ack->getPacketIdentifier() == msg->getPacketIdentifier()) {
-                        callback(ErrorCode{});
-                        return false; // disconnect from event
-                    }
+    using namespace mqtt::message;
 
-                    return true; // continue receive events
-                });
+    boost::future<void> UnSubscribeCommand::execute() {
+        auto promise = std::make_shared<boost::promise<void>>();
+        auto msg = std::make_shared<UnSubscribeMessage>(_topic, getPacketIdentifier());
 
-            } else {
-                callback(err);
+        request<UnSubscribeMessage, UnSubAckMessage>(msg).then([promise](boost::future<message::UnSubAckMessage> ack) {
+            try {
+                ack.get();
+                promise->set_value();
+            } catch (boost::system::system_error &ex) {
+                promise->set_exception(ack.get_exception_ptr());
             }
         });
-    }
 
+        return promise->get_future();
+    }
 }
 

@@ -55,7 +55,7 @@ namespace mqtt {
                 _timer = std::make_unique<Timer>("Reconnect Timer", [this]() { this->startConnect(); }, PosixSeconds{10});
                 _timer->reset();
             } else {
-                MQTT_LOG(info) << name() << " Connected to " << _props.address << ":" << _props.port;
+                MQTT_LOG(debug) << name() << " Connected to " << _props.address << ":" << _props.port;
                 _status = ACTIVE;
 
                 startRead();
@@ -170,13 +170,13 @@ namespace mqtt {
         startRead();
     }
 
-    ErrorFuture DefaultConnection::post(const message::Message::Ptr &msg) {
-        auto promise = std::make_shared<ErrorPromise>();
+    VoidFuture DefaultConnection::post(const message::Message::Ptr &msg) {
+        auto promise = std::make_shared<VoidPromise>();
 
         asio::dispatch(IoServiceHolder::get_mutable_instance(), [this, msg, promise]() {
             if (msg->getType() != MQTT_MSG_CONNECT && _status != CONNECTED) {
                 MQTT_LOG(info) << name() << " " << msg->getTypeStr() << " ignored";
-                promise->set_value(ErrorCode{});
+                promise->set_exception(system::system_error(boost::asio::error::operation_aborted));
                 return;
             }
 
@@ -190,7 +190,11 @@ namespace mqtt {
             _encoder.encode(_out, msg);
 
             async_write(_socket, _out, [this, promise](const ErrorCode &errorCode, std::size_t size) mutable {
-                promise->set_value(errorCode);
+                if (errorCode) {
+                    promise->set_exception(system::system_error(errorCode));
+                } else {
+                    promise->set_value();
+                }
                 channelWriteComplete(errorCode, size);
             });
         });

@@ -19,17 +19,17 @@ namespace mqtt {
         typedef std::shared_ptr<EventManager> Ptr;
         typedef boost::signals2::signal<void(const Event &)> Signal;
     private:
-        std::unordered_map<std::type_index, Signal> _signals;
+        typedef  std::unordered_map<std::type_index, Signal> SignalMap;
+        SignalMap _signals;
     public:
         template<class E>
         void subscribe(const EventHandler::Ptr &handler) {
             auto *channel = dynamic_cast< TEventHandler<E> *>(handler.get());
             if (!channel) {
-                throw std::invalid_argument(std::string("Handler not support event ") + typeid(E).name());
+                throw std::invalid_argument(std::string("[EM] handler not support event ") + typeid(E).name());
             }
 
-            auto &signal = _signals[typeid(E)];
-            signal.connect(boost::signals2::signal<void(const Event &)>::slot_type(
+            _signals[typeid(E)].connect(boost::signals2::signal<void(const Event &)>::slot_type(
                     [channel](const Event &event) {
                         const auto *real = static_cast<const E *>(&event);
                         if (real) {

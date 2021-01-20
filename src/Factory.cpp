@@ -6,7 +6,7 @@
 
 namespace mqtt {
 
-    ErrorFuture DefaultClient::post(const message::Message::Ptr &msg) {
+    VoidFuture DefaultClient::post(const message::Message::Ptr &msg) {
         return _connection->post(msg);
     }
 
@@ -17,6 +17,10 @@ namespace mqtt {
     void DefaultClient::onEvent(const EventTopicUnSubscribe &event) {
         MQTT_LOG(info) << "MQTT Client remove subscriber: " << event.getTopic();
         _subscribers.erase(event.getSubscriber());
+    }
+
+    void DefaultClient::onEvent(const EventChannelMessage &event) {
+
     }
 
     Subscription DefaultClient::subscribe(std::string_view topic, uint8_t qos, const std::function<void(const ByteBuffer &)> &callback) {
@@ -51,6 +55,7 @@ namespace mqtt {
         auto client = std::make_shared<DefaultClient>(conn, eventManager);
 
         eventManager->subscribe<EventTopicUnSubscribe>(client);
+        eventManager->subscribe<EventChannelMessage>(client);
 
         conn->start();
 

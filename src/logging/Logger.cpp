@@ -33,6 +33,10 @@ namespace mqtt {
             if (severity) {
                 // Set the color
                 switch (severity.get()) {
+                    case log::trivial::severity_level::debug:
+                        strm << "\033[37m";
+                        break;
+
                     case log::trivial::severity_level::info:
                         strm << "\033[32m";
                         break;

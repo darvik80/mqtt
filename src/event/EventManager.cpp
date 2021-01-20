@@ -14,7 +14,7 @@ namespace mqtt {
     void EventManager::raiseEvent(const Event &event) {
         auto iter = _signals.find(typeid(event));
         if (iter != _signals.end()) {
-            MQTT_LOG(info) << "raise event: " << iter->first.name() << " subs: " << iter->second.num_slots() << std::endl;
+            MQTT_LOG(debug) << "raise event: " << iter->first.name() << " subs: " << iter->second.num_slots() << std::endl;
             iter->second(event);
         } else {
             MQTT_LOG(warning) << "miss event: " << typeid(event).name() << std::endl;

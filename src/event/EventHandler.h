@@ -13,7 +13,7 @@ namespace mqtt {
 
     class EventHandler {
     public:
-        typedef std::shared_ptr <EventHandler> Ptr;
+        typedef std::shared_ptr<EventHandler> Ptr;
 
         virtual ~EventHandler() = default;
     };
@@ -22,6 +22,8 @@ namespace mqtt {
     class TEventHandler : virtual public EventHandler {
     public:
         virtual void onEvent(const T &event) = 0;
+
+        ~TEventHandler() override = default;
     };
 
     class EventChannelActiveHandler : virtual public TEventHandler<EventChannelActive> {
@@ -49,6 +51,17 @@ namespace mqtt {
         void onEvent(const EventTopicUnSubscribe &event) override = 0;
     };
 
+    template<class T>
+    class EventHandlerWrapper : public TEventHandler<T> {
+        std::function<void(const T &)> _handler;
+    public:
+        explicit EventHandlerWrapper(std::function<void(const T &)> handler) : _handler(std::move(handler)) {
+        }
+
+        void onEvent(const T &event) override {
+            _handler(event);
+        }
+    };
 }
 
 #endif //MQTT_EVENTHANDLER_H

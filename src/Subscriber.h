@@ -58,13 +58,12 @@ namespace mqtt {
         void start() {
             std::lock_guard guard(_lock);
             if (_cmdSubscribe) {
-                _cmdSubscribe->execute([this](const ErrorCode &err) {
-                    if (err) {
-                        MQTT_LOG(info) << "Can't subscribe to: " << _filter.getFilter() << ", error: " << err.message();
-                    }
-
-                    if (!_cmdSubscribe) {
-                        shutdown();
+                _cmdSubscribe->execute().then([this](VoidFuture future) {
+                    try {
+                        future.get();
+                        MQTT_LOG(info) << "Subscribed to: " << _filter.getFilter() << "!!!";
+                    } catch (boost::system::system_error& ex) {
+                        MQTT_LOG(error) << "Can't subscribe to: " << _filter.getFilter() << ", error: " << ex.code() << " " << ex.what();
                     }
                 });
             }
@@ -73,9 +72,12 @@ namespace mqtt {
         void shutdown() {
             std::lock_guard guard(_lock);
             _cmdSubscribe.reset();
-            _cmdUnSubscribe->execute([this](const ErrorCode &err) {
-                if (err) {
-                    MQTT_LOG(info) << "Can't unSubscribe to: " << _filter.getFilter() << ", error: " << err.message();
+            _cmdUnSubscribe->execute().then([this](VoidFuture future) {
+                try {
+                    future.get();
+                    MQTT_LOG(info) << "UnSubscribed from: " << _filter.getFilter();
+                } catch (boost::system::system_error& ex) {
+                    MQTT_LOG(warning) << "Can't subscribe to: " << _filter.getFilter() << ", error: " << ex.code() << " " << ex.what();
                 }
             });
 
@@ -107,7 +109,6 @@ namespace mqtt {
 
         }
 
-
         Subscription &operator=(const Subscription &other) {
             if (&other == this) {
                 return *this;
@@ -126,7 +127,7 @@ namespace mqtt {
             return ptr != nullptr;
         }
 
-        bool shutdown() const {
+        [[nodiscard]] bool shutdown() const {
             Subscriber::Ptr ptr = _subscriber.lock();
             if (ptr) {
                 ptr->shutdown();

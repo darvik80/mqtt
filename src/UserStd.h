@@ -7,6 +7,7 @@
 
 #define BOOST_THREAD_PROVIDES_FUTURE
 #define BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
+
 #include <boost/thread/future.hpp>
 
 #include <vector>
@@ -16,6 +17,11 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/signals2.hpp>
+
+#include <boost/thread/lockable_adapter.hpp>
+#include <boost/thread/strict_lock.hpp>
+#include <boost/thread/with_lock_guard.hpp>
+
 
 namespace mqtt {
     typedef std::vector<uint8_t> ByteBuffer;
@@ -50,6 +56,9 @@ namespace mqtt {
 
     typedef boost::promise<ErrorCode> ErrorPromise;
     typedef boost::future<ErrorCode> ErrorFuture;
+
+    typedef boost::basic_lockable_adapter<boost::mutex> LockableAdapter;
+
 }
 
 

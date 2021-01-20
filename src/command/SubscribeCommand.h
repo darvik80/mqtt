@@ -9,19 +9,23 @@
 #include "Client.h"
 #include "Command.h"
 
+#include <message/SubscribeMessage.h>
+#include <message/SubAckMessage.h>
+
+#include <utility>
+
 namespace mqtt {
 
-    class SubscribeCommand : public Command {
+    class SubscribeCommand : public Command,
+                             public std::enable_shared_from_this<SubscribeCommand> {
     private:
-        Client::Ptr _client{};
-
         std::string _topic{};
         uint16_t _qos{};
     public:
         SubscribeCommand(const Client::Ptr &client, std::string_view topic, uint16_t qos)
-                : _client(client), _topic(topic), _qos(qos) {}
+                : Command(client), _topic(topic), _qos(qos) {}
 
-        void execute(const std::function<void(const ErrorCode&)> &callback) override;
+        boost::future<void> execute() override;
     };
 }
 

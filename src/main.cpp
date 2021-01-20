@@ -46,23 +46,18 @@ int main(int argc, char* argv[]) {
             vm["password"].as<std::string>(),
     };
 
-    DeadlineTimer timer(main);
-    timer.expires_from_now(PosixSeconds{10});
-    {
-        auto client = factory->create(properties);
-        auto sub = client->subscribe("/home/new", message::QOS_AT_LEAST_ONCE, [](const ByteBuffer &data) {
-            std::string msg((const char *) data.data(), data.size());
-            MQTT_LOG(info) << "Got MSG: " << msg;
-        });
-
-//        auto pub = client->publisher("/home/test", message::QOS_AT_LEAST_ONCE);
-//        timer.async_wait([pub, &timer](const ErrorCode& err) {
-//            //sub.shutdown();
-//            pub.publish("Hello World");
-//        });
-
-        main.run();
-    }
+    auto client = factory->create(properties);
+    DeadlineTimer timer(main, PosixSeconds{10});
+    auto sub = client->subscribe("/home/test", message::QOS_AT_LEAST_ONCE, [](const ByteBuffer & data) {
+        std::string msg(data.begin(), data.end());
+        MQTT_LOG(info) << "Got msg: " << msg;
+    });
+    auto pub = client->publisher("/home/test", message::QOS_AT_LEAST_ONCE);
+    timer.async_wait([pub, &timer](const ErrorCode& err) {
+        //sub.shutdown();
+        pub.publish("Hello World");
+    });
+    main.run();
     lib->shutdown();
     return 0;
 }

@@ -10,7 +10,7 @@ namespace mqtt::message {
         return _topicFilters;
     }
 
-    void UnSubscribeMessage::addTopicFilter(const std::string &topicFilter) {
-        _topicFilters.push_back(topicFilter);
+    void UnSubscribeMessage::addTopicFilter(std::string_view topicFilter) {
+        _topicFilters.emplace_back(topicFilter);
     }
 }

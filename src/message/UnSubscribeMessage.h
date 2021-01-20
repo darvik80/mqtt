@@ -18,9 +18,15 @@ namespace mqtt::message {
     public:
         UnSubscribeMessage() : Message(MQTT_MSG_UNSUBSCRIBE) { }
 
+        UnSubscribeMessage(const std::string_view topicFilter, uint16_t pid) : Message(MQTT_MSG_UNSUBACK) {
+            addTopicFilter(topicFilter);
+            setPacketIdentifier(pid);
+        }
+
+
         [[nodiscard]] const std::vector<std::string> &getTopicFilters() const;
 
-        void addTopicFilter(const std::string& topicFilter);
+        void addTopicFilter(std::string_view topicFilter);
     };
 
 }

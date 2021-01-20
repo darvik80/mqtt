@@ -36,6 +36,11 @@ namespace mqtt::message {
     public:
         SubscribeMessage() : Message(MQTT_MSG_SUBSCRIBE) { }
 
+        SubscribeMessage(std::string_view topicFilter, uint8_t qos, uint16_t pid) : Message(MQTT_MSG_SUBSCRIBE) {
+            addTopic(topicFilter, qos);
+            setPacketIdentifier(pid);
+        }
+
         [[nodiscard]] const std::vector<SubscribePayload> &getTopics() const;
 
 

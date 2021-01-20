@@ -13,13 +13,11 @@ namespace mqtt {
 
     class UnSubscribeCommand : public Command {
     private:
-        Client::Ptr _client{};
-
         std::string _topic{};
     public:
         UnSubscribeCommand(const Client::Ptr &client, std::string_view topic);
 
-        void execute(const std::function<void(const ErrorCode&)> &callback) override;
+        boost::future<void> execute() override;
     };
 
 }

@@ -29,7 +29,7 @@ namespace mqtt {
     public:
         Connection() = default;
 
-        virtual ErrorFuture post(const message::Message::Ptr &msg) = 0;
+        virtual VoidFuture post(const message::Message::Ptr &msg) = 0;
 
         virtual void onMessage(const message::Message::Ptr &msg) = 0;
 
@@ -82,7 +82,7 @@ namespace mqtt {
     public:
         explicit DefaultConnection(const properties::ConnectionProperties &props);
 
-        ErrorFuture post(const message::Message::Ptr &msg) override;
+        VoidFuture post(const message::Message::Ptr &msg) override;
 
         void onMessage(const message::Message::Ptr &msg) override;
 

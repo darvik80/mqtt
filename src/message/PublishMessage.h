@@ -19,8 +19,8 @@ namespace mqtt::message {
         std::vector<uint8_t> _message;
     public:
         PublishMessage(std::string_view topic, uint16_t packetIdentifier);
-        PublishMessage(std::string_view topic, uint8_t qos, std::string_view data);
-        PublishMessage(std::string_view topic, uint8_t packetIdentifier, const std::vector<uint8_t>& data);
+        PublishMessage(std::string_view topic, uint8_t qos, uint16_t packetIdentifier, std::string_view data);
+        PublishMessage(std::string_view topic, uint8_t qos, uint16_t packetIdentifier, const std::vector<uint8_t>& data);
 
         PublishMessage() : Message(MQTT_MSG_PUBLISH) {
             setRetain(true);
