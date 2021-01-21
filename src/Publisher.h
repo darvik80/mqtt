@@ -19,8 +19,9 @@ namespace mqtt {
             cmd->execute().then([topic = _topic](boost::future<void> future) {
                 try {
                     future.get();
+                    MQTT_LOG(debug) << " published to: " << topic;
                 } catch (boost::system::system_error& ex) {
-                    MQTT_LOG(info) << "Can't publish to: " << topic << ", error: " << ex.code() << " " << ex.what();
+                    MQTT_LOG(error) << " failed publish to: " << topic << ", " << ex.what();
                 }
             });
         }
@@ -29,15 +30,15 @@ namespace mqtt {
                 : _client(client), _topic(topic), _qos(qos) {}
 
         void publish(const ByteBuffer& data) const {
-            exec(std::make_shared<PublishCommand>(_client, _topic, _qos, data));
+            exec(PublishCommand::create(_client, _topic, _qos, data));
         }
 
         void publish(std::string_view data) const {
-            exec(std::make_shared<PublishCommand>(_client, _topic, _qos, data));
+            exec(PublishCommand::create(_client, _topic, _qos, data));
         }
 
         void publish(const char* data) const {
-            exec(std::make_shared<PublishCommand>(_client, _topic, _qos, data));
+            exec(PublishCommand::create(_client, _topic, _qos, data));
         }
     };
 

@@ -21,12 +21,9 @@ namespace mqtt {
         Client::Ptr _client;
     public:
         typedef std::shared_ptr<Command> Ptr;
-    public:
+    protected:
         explicit Command(const Client::Ptr &client) : _client(client) {}
 
-        virtual boost::future<void> execute() = 0;
-
-    protected:
         template<class T>
         boost::future<void> request(std::shared_ptr<T> &req) {
             return _client->post(req);
@@ -45,7 +42,7 @@ namespace mqtt {
                         }
 
                         if (timer->cancel()) {
-                            MQTT_LOG(info) << "[CMD] handle ACK, pid: " << ack->getPacketIdentifier();
+                            MQTT_LOG(debug) << "[CMD] handle ACK, pid: " << ack->getPacketIdentifier();
                             promise->set_value(*ack);
                         }
                     });
@@ -54,7 +51,7 @@ namespace mqtt {
             EventHandler::Ptr netHandler = std::make_shared<EventHandlerWrapper<EventChannelInactive>>(
                     [req, promise, timer](const EventChannelInactive &event) {
                         if (timer->cancel()) {
-                            MQTT_LOG(info) << "[CMD] handle ERR, pid: " << req->getPacketIdentifier() << ", " << event.getErr();
+                            MQTT_LOG(error) << "[CMD] failed, pid: " << req->getPacketIdentifier() << ", error: " << event.getErr();
                             promise->set_exception(event.getErr());
                         }
                     });
@@ -64,14 +61,14 @@ namespace mqtt {
                 try {
                     result.get();
                 } catch (boost::system::system_error& ex) {
-                    MQTT_LOG(info) << "[CMD] can't send request, pid: " << req->getPacketIdentifier() <<  ", error: " << ex.code() << " " << ex.what();
+                    MQTT_LOG(error) << "[CMD] failed send request, pid: " << req->getPacketIdentifier() <<  ", error: [" << ex.code() << "] " << ex.what();
                     promise->set_exception(ex);
                     return;
                 }
 
                 timer->async_wait([req, msgHandler, netHandler, promise](const ErrorCode &err) {
                     if (!err) {
-                        MQTT_LOG(info) << "[CMD] handle request timeout, pid: " << req->getPacketIdentifier();
+                        MQTT_LOG(error) << "[CMD] request timeout, pid: " << req->getPacketIdentifier();
                         promise->set_exception(boost::system::system_error(boost::asio::error::timed_out));
                     }
                 });
@@ -83,7 +80,11 @@ namespace mqtt {
         uint16_t getPacketIdentifier() {
             return _client->getPacketIdentifier();
         }
+
+    public:
+        virtual boost::future<void> execute() = 0;
     };
+
 }
 
 #endif //MQTT_COMMAND_H

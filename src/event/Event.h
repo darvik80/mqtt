@@ -8,8 +8,6 @@
 #include "message/Message.h"
 #include "UserStd.h"
 
-#include "EventType.h"
-
 namespace mqtt {
 
     class Event {

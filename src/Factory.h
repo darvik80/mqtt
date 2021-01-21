@@ -24,8 +24,15 @@ namespace mqtt {
         EventManager::Ptr _eventManager;
 
         std::unordered_set<Subscriber::Ptr> _subscribers;
-    public:
+    private:
         DefaultClient(const Connection::Ptr &connection, EventManager::Ptr &eventManager);
+
+    public:
+
+        template<typename ... T>
+        static std::shared_ptr<DefaultClient> create(T &&... all) {
+            return std::shared_ptr<DefaultClient>(new DefaultClient(std::forward<T>(all)...));
+        }
 
         VoidFuture post(const message::Message::Ptr &msg) override;
 

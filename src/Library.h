@@ -19,7 +19,7 @@ namespace mqtt {
 
         Factory::Ptr _factory;
     private:
-        void run();
+        static void run();
     public:
         void init();
 

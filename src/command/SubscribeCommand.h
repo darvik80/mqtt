@@ -21,9 +21,14 @@ namespace mqtt {
     private:
         std::string _topic{};
         uint16_t _qos{};
-    public:
+    private:
         SubscribeCommand(const Client::Ptr &client, std::string_view topic, uint16_t qos)
                 : Command(client), _topic(topic), _qos(qos) {}
+    public:
+        template<typename ... T>
+        static std::shared_ptr<SubscribeCommand> create(T &&... all) {
+            return std::shared_ptr<SubscribeCommand>(new SubscribeCommand(std::forward<T>(all)...));
+        }
 
         boost::future<void> execute() override;
     };

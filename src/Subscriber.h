@@ -35,11 +35,17 @@ namespace mqtt {
         Client::WeakPtr _client;
 
         TopicFilter _filter;
-    public:
+    private:
         Subscriber(Client::Ptr client, std::string_view topic, uint8_t qos, const std::function<void(const ByteBuffer &)> &callback)
                 : _callback(callback), _client(client), _filter(topic) {
-            _cmdSubscribe = std::make_shared<SubscribeCommand>(client, topic, qos);
-            _cmdUnSubscribe = std::make_shared<UnSubscribeCommand>(client, topic);
+            _cmdSubscribe = SubscribeCommand::create(client, topic, qos);
+            _cmdUnSubscribe = UnSubscribeCommand::create(client, topic);
+            MQTT_LOG(debug) << "[SUB] subscriber: " << _filter.getFilter() << " created";
+        }
+    public:
+        template<typename ... T>
+        static std::shared_ptr<Subscriber> create(T &&... all) {
+            return std::shared_ptr<Subscriber>(new Subscriber(std::forward<T>(all)...));
         }
 
         void onEvent(const EventChannelMessage &event) override {
@@ -52,6 +58,7 @@ namespace mqtt {
         }
 
         void onEvent(const EventChannelActive &event) override {
+            MQTT_LOG(info) << "[SUB] detected active channel, re-subscribe to: " << _filter.getFilter();
             start();
         }
 
@@ -61,9 +68,9 @@ namespace mqtt {
                 _cmdSubscribe->execute().then([this](VoidFuture future) {
                     try {
                         future.get();
-                        MQTT_LOG(info) << "Subscribed to: " << _filter.getFilter() << "!!!";
+                        MQTT_LOG(info) << "[SUB] subscribed to: " << _filter.getFilter() ;
                     } catch (boost::system::system_error& ex) {
-                        MQTT_LOG(error) << "Can't subscribe to: " << _filter.getFilter() << ", error: " << ex.code() << " " << ex.what();
+                        MQTT_LOG(error) << "[SUB] failed subscribe to: " << _filter.getFilter() << ", " << ex.what();
                     }
                 });
             }
@@ -75,9 +82,9 @@ namespace mqtt {
             _cmdUnSubscribe->execute().then([this](VoidFuture future) {
                 try {
                     future.get();
-                    MQTT_LOG(info) << "UnSubscribed from: " << _filter.getFilter();
+                    MQTT_LOG(info) << "[SUB] un-subscribed from: " << _filter.getFilter();
                 } catch (boost::system::system_error& ex) {
-                    MQTT_LOG(warning) << "Can't subscribe to: " << _filter.getFilter() << ", error: " << ex.code() << " " << ex.what();
+                    MQTT_LOG(warning) << "[SUB] failed subscribe to: " << _filter.getFilter() << ", " << ex.what();
                 }
             });
 
@@ -88,7 +95,7 @@ namespace mqtt {
         }
 
         ~Subscriber() override {
-            MQTT_LOG(info) << "Subscriber: " << _filter.getFilter() << " destroyed";
+            MQTT_LOG(debug) << "[SUB] subscriber: " << _filter.getFilter() << " destroyed";
         }
     };
 

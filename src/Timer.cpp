@@ -7,25 +7,35 @@
 
 
 namespace mqtt {
-    Timer::Timer(std::string_view name, const Runnable &callback, const PosixDuration &duration)
-            : Component(name), _timer(IoServiceHolder::get_mutable_instance()), _callback(callback),
+    Timer::Timer(const Runnable &callback, const PosixDuration &duration)
+            : _timer(IoServiceHolder::get_mutable_instance()), _callback(callback),
               _duration(duration) {
 
     }
 
-    Timer::Timer(std::string_view name, const Runnable &callback, const Runnable &cancel, const PosixDuration &duration)
-            : Component(name), _timer(IoServiceHolder::get_mutable_instance()), _callback(callback), _cancel(cancel),
+    Timer::Timer(const Runnable &callback, const Runnable &cancel, const PosixDuration &duration)
+            : _timer(IoServiceHolder::get_mutable_instance()), _callback(callback), _cancel(cancel),
               _duration(duration) {
 
     }
 
 
     void Timer::reset() {
+        auto weak = weak_from_this();
+
+        auto id = (unsigned long)(this);
+        MQTT_LOG(debug) << "[Timer] " << id << " set " << _duration.seconds() << "s";
         _timer.expires_from_now(_duration);
-        _timer.async_wait([this](const ErrorCode &err) {
+        _timer.async_wait([weak, id](const ErrorCode &err) {
             if (!err) {
-                _callback();
-                reset();
+                MQTT_LOG(debug) << "[Timer] " << id << " happens";
+                auto self = weak.lock();
+                if (self) {
+                    self->_callback();
+                    self->reset();
+                }
+            } else {
+                MQTT_LOG(debug) << "[Timer] " << id << " canceled";
             }
         });
     }

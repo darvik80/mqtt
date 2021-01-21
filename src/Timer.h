@@ -10,20 +10,28 @@
 
 namespace mqtt {
 
-    class Timer : public Component {
+    class Timer : public std::enable_shared_from_this<Timer> {
     public:
         typedef std::shared_ptr<Timer> Ptr;
-        typedef std::unique_ptr<Timer> AutoPtr;
     private:
         const Runnable _callback;
         const Runnable _cancel{nullptr};
         const PosixDuration _duration;
         DeadlineTimer _timer;
+    private:
+        Timer(const Runnable &callback, const PosixDuration &duration);
+        Timer(const Runnable &callback, const Runnable &cancel, const PosixDuration &duration);
+
     public:
-        Timer(std::string_view name, const Runnable &callback, const PosixDuration &duration);
-        Timer(std::string_view name, const Runnable &callback, const Runnable& cancel, const PosixDuration &duration);
+        template<typename ... T>
+        static std::shared_ptr<Timer> create(T &&... all) {
+            auto res = std::shared_ptr<Timer>(new Timer(std::forward<T>(all)...));
+            res->reset();
+            return res;
+        }
 
         void reset();
+
         void cancel();
 
         virtual ~Timer();

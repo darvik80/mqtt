@@ -11,11 +11,16 @@
 
 namespace mqtt {
 
-    class UnSubscribeCommand : public Command {
+    class UnSubscribeCommand : public Command, public std::enable_shared_from_this<UnSubscribeCommand> {
     private:
         std::string _topic{};
-    public:
+    private:
         UnSubscribeCommand(const Client::Ptr &client, std::string_view topic);
+    public:
+        template<typename ... T>
+        static std::shared_ptr<UnSubscribeCommand> create(T &&... all) {
+            return std::shared_ptr<UnSubscribeCommand>(new UnSubscribeCommand(std::forward<T>(all)...));
+        }
 
         boost::future<void> execute() override;
     };

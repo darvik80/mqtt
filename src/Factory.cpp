@@ -24,7 +24,7 @@ namespace mqtt {
     }
 
     Subscription DefaultClient::subscribe(std::string_view topic, uint8_t qos, const std::function<void(const ByteBuffer &)> &callback) {
-        auto subscriber = std::make_shared<Subscriber>(shared_from_this(), topic, qos, callback);
+        auto subscriber = Subscriber::create(shared_from_this(), topic, qos, callback);
 
         _eventManager->subscribe<EventChannelActive>(subscriber);
         _eventManager->subscribe<EventChannelMessage>(subscriber);
@@ -52,7 +52,7 @@ namespace mqtt {
         auto conn = std::make_shared<DefaultConnection>(props);
         auto eventManager = std::make_shared<EventManager>();
         conn->setEventManager(eventManager);
-        auto client = std::make_shared<DefaultClient>(conn, eventManager);
+        auto client = DefaultClient::create(conn, eventManager);
 
         eventManager->subscribe<EventTopicUnSubscribe>(client);
         eventManager->subscribe<EventChannelMessage>(client);

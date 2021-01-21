@@ -15,6 +15,8 @@ namespace mqtt::properties {
 
             std::string username;
             std::string password;
+
+            std::string clienName;
         };
 
     }

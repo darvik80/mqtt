@@ -53,7 +53,7 @@ namespace mqtt {
 
         uint16_t _packetIdentifier{0};
 
-        Timer::AutoPtr _timer;
+        Timer::Ptr _timer;
 
         EventManager::Ptr _eventManager;
 

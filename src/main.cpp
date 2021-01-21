@@ -11,14 +11,13 @@ using namespace mqtt;
 
 namespace po = boost::program_options;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // Declare the supported options.
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "produce help message")
             ("user", po::value<std::string>(), "MQTT login name")
-            ("password", po::value<std::string>(), "MQTT password")
-            ;
+            ("password", po::value<std::string>(), "MQTT password");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
@@ -44,16 +43,17 @@ int main(int argc, char* argv[]) {
             1883,
             vm["user"].as<std::string>(),
             vm["password"].as<std::string>(),
+            "rover"
     };
 
     auto client = factory->create(properties);
     DeadlineTimer timer(main, PosixSeconds{10});
-    auto sub = client->subscribe("/home/test", message::QOS_AT_LEAST_ONCE, [](const ByteBuffer & data) {
+    auto sub = client->subscribe("/home/test", message::QOS_AT_LEAST_ONCE, [](const ByteBuffer &data) {
         std::string msg(data.begin(), data.end());
         MQTT_LOG(info) << "Got msg: " << msg;
     });
     auto pub = client->publisher("/home/test", message::QOS_AT_LEAST_ONCE);
-    timer.async_wait([pub, &timer](const ErrorCode& err) {
+    timer.async_wait([pub, &timer](const ErrorCode &err) {
         //sub.shutdown();
         pub.publish("Hello World");
     });

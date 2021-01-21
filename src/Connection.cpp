@@ -16,7 +16,7 @@ using namespace mqtt::message;
 namespace mqtt {
 
     DefaultConnection::DefaultConnection(const properties::ConnectionProperties &props)
-            : Component("MQTTChannel")
+            : Component("[MQTT](" + props.address + ")")
             , _socket(IoServiceHolder::get_mutable_instance())
             , _incBuf(512)
             , _props(props) {
@@ -46,16 +46,15 @@ namespace mqtt {
         _socket.async_connect(_endpoint, [this](const boost::system::error_code &err) {
             if (!_socket.is_open() || err) {
                 if (!_socket.is_open()) {
-                    MQTT_LOG(warning) << name() << " Connect timed out";
+                    MQTT_LOG(warning) << name() << " connect timed out";
                 } else {
-                    MQTT_LOG(error) << name() << " Connect error: " << err.message();
+                    MQTT_LOG(error) << name() << " connect failed: " << err.message();
                     _socket.close();
                 }
 
-                _timer = std::make_unique<Timer>("Reconnect Timer", [this]() { this->startConnect(); }, PosixSeconds{10});
-                _timer->reset();
+                _timer = Timer::create([this]() { this->startConnect(); }, PosixSeconds{10});
             } else {
-                MQTT_LOG(debug) << name() << " Connected to " << _props.address << ":" << _props.port;
+                MQTT_LOG(debug) << name() << " connected";
                 _status = ACTIVE;
 
                 startRead();
@@ -76,20 +75,19 @@ namespace mqtt {
 
     void DefaultConnection::onMessage(const message::Message::Ptr &msg) {
         _lastUpdate = boost::posix_time::second_clock::local_time();
-        MQTT_LOG(info) << name() << " Recv: " << msg->getTypeStr();
+        MQTT_LOG(debug) << name() << " recv: " << msg->getTypeStr();
         raiseEvent(EventChannelMessage{*this, msg});
         switch (msg->getType()) {
             case MQTT_MSG_CONNACK: {
                 auto ack = (ConnAckMessage *) msg.get();
                 if (ack->getReasonCode()) {
-                    MQTT_LOG(error) << "Session failed: " << ack->getReasonCodeDescription();
+                    MQTT_LOG(error) << name() << " session failed: " << ack->getReasonCodeDescription();
                     _socket.close();
                 } else {
                     _status = CONNECTED;
-                    MQTT_LOG(info) << "Session is active: " << _props.address << ":" << _props.port;;
+                    MQTT_LOG(info) << name() << " session is active";
                     raiseEvent(EventChannelActive{*this});
-                    _timer = std::make_unique<Timer>(
-                            "IdleTimer",
+                    _timer = Timer::create(
                             [this]() {
                                 PosixTime now = boost::posix_time::second_clock::local_time();
                                 if ((now - _lastUpdate) > PosixSeconds{10}) {
@@ -100,21 +98,21 @@ namespace mqtt {
                             },
                             PosixSeconds{5}
                     );
-                    _timer->reset();
+                    return;
                 }
             }
                 break;
+            case MQTT_MSG_PINGRESP:
+                return;
+            case MQTT_MSG_DISCONNECT:
+                _status = IDLE;
+                return;
             case MQTT_MSG_PUBLISH: {
                 auto pub = (PublishMessage *) msg.get();
                 if (pub->getQos() >= message::QOS_AT_LEAST_ONCE) {
                     post(std::make_shared<message::PubAckMessage>(pub->getPacketIdentifier()));
                 }
             }
-                break;
-            case MQTT_MSG_PINGRESP:
-                break;
-            case MQTT_MSG_DISCONNECT:
-                _status = IDLE;
                 break;
         }
 
@@ -124,11 +122,10 @@ namespace mqtt {
     }
 
     void DefaultConnection::channelActive() {
-        _timer = std::make_unique<Timer>("ConnTimer", [this]() { this->_socket.close(); }, PosixSeconds{5});
-        _timer->reset();
+        _timer = Timer::create([this]() { this->_socket.close(); }, PosixSeconds{5});
 
-        MQTT_LOG(info) << "Channel Active: " << _props.address << ":" << _props.port;
-        auto msg = std::make_shared<ConnectMessage>("Rover");
+        MQTT_LOG(info) << name() << " channel active";
+        auto msg = std::make_shared<ConnectMessage>(_props.clienName);
         msg->setUserName(_props.username);
         msg->setPassword(_props.password);
         post(msg);
@@ -136,21 +133,21 @@ namespace mqtt {
 
     void DefaultConnection::channelInactive(const ErrorCode &err) {
         if (err) {
-            MQTT_LOG(error) << "Channel inactive: " << _props.address << ":" << _props.port << ", " << err.message();
+            MQTT_LOG(error) << name() << " channel inactive: " << err.message();
 
             _socket.close();
             asio::dispatch(IoServiceHolder::get_mutable_instance(), [this]() {
                 startConnect();
             });
         } else {
-            MQTT_LOG(info) << "Channel inactive: " << _props.address << ":" << _props.port;
+            MQTT_LOG(info) <<  name() << " inactive";
         }
         raiseEvent(EventChannelInactive{*this, err});
     }
 
     void DefaultConnection::channelReadComplete(const ErrorCode &err, size_t readSize) {
         if (err) {
-            MQTT_LOG(warning) << "Read Failed: " << _props.address << ":" << _props.port << ", " << err.message();
+            MQTT_LOG(warning) << "read failed: " << err.message();
             channelInactive(err);
             return;
         }
@@ -180,7 +177,7 @@ namespace mqtt {
                 return;
             }
 
-            MQTT_LOG(info) << name() << " Send: " << _props.address << ":" << _props.port << ", " << msg->getTypeStr();
+            MQTT_LOG(debug) << name() << " send: " << msg->getTypeStr();
 
             // TODO remove it
             auto identifier = dynamic_cast<MessagePacketIdentifier *>(msg.get());
@@ -204,12 +201,12 @@ namespace mqtt {
 
     void DefaultConnection::channelWriteComplete(const ErrorCode &err, size_t writeSize) {
         if (err) {
-            MQTT_LOG(info) << "Send Failed: " << _props.address << ":" << _props.port << ", " << err.message() << ", " << writeSize;
+            MQTT_LOG(error) << "send failed: [" << err.value() << "] " << err.message() << ", " << writeSize;
             channelInactive(err);
         }
     }
 
     void DefaultConnection::setEventManager(EventManager::Ptr eventManager) {
-        this->_eventManager = eventManager;
+        this->_eventManager = std::move(eventManager);
     }
 }

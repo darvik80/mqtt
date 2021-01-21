@@ -34,8 +34,7 @@ namespace mqtt {
                 }
             });
         } else if (_qos == QOS_AT_LEAST_ONCE) {
-            auto self = shared_from_this();
-            request<PublishMessage, PubRecMessage>(msg).then([self, promise](boost::future<PubRecMessage> rec) {
+            request<PublishMessage, PubRecMessage>(msg).then([self = shared_from_this(), promise](boost::future<PubRecMessage> rec) {
                 try {
                     auto rel = std::make_shared<PubRelMessage>();
                     rel->setPacketIdentifier(rec.get().getPacketIdentifier());

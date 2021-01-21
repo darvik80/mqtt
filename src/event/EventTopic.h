@@ -17,7 +17,7 @@ namespace mqtt {
         std::shared_ptr<Subscriber> _subscriber;
         std::string _topic;
     public:
-        EventTopic( const std::shared_ptr<Subscriber>& subscriber, std::string_view topic)
+        EventTopic(const std::shared_ptr<Subscriber>& subscriber, std::string_view topic)
                 : _subscriber(subscriber), _topic(topic) {}
 
         [[nodiscard]] const std::shared_ptr<Subscriber> &getSubscriber() const {
@@ -41,7 +41,6 @@ namespace mqtt {
         explicit EventTopicUnSubscribe(const std::shared_ptr<Subscriber>& subscriber, std::string_view topic)
                 : EventTopic(subscriber, topic) {}
     };
-
 }
 
 #endif //MQTT_EVENTTOPIC_H

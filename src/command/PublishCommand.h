@@ -14,7 +14,9 @@ namespace mqtt {
         std::string _topic{};
         ByteBuffer _data;
         uint8_t _qos;
-    public:
+    private:
+        PublishCommand(const PublishCommand &origin) = default;
+
         PublishCommand(const Client::Ptr &client, std::string_view topic, uint8_t qos, const ByteBuffer &data)
                 : Command(client), _topic(topic), _qos(qos), _data(data) {}
 
@@ -26,7 +28,13 @@ namespace mqtt {
                 : Command(client), _topic(topic), _qos(qos) {
             size_t size = strlen(data);
             _data.resize(size);
-            std::copy((uint8_t*)data, (uint8_t*)(data + size), _data.begin());
+            std::copy((uint8_t *) data, (uint8_t *) (data + size), _data.begin());
+        }
+
+    public:
+        template<typename ... T>
+        static std::shared_ptr<PublishCommand> create(T &&... all) {
+            return std::shared_ptr<PublishCommand>(new PublishCommand(std::forward<T>(all)...));
         }
 
         boost::future<void> execute() override;
