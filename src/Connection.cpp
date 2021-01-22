@@ -206,7 +206,7 @@ namespace mqtt {
         }
     }
 
-    void DefaultConnection::setEventManager(EventManager::Ptr eventManager) {
-        this->_eventManager = std::move(eventManager);
+    void DefaultConnection::setEventManager(const EventManager::Ptr &eventManager) {
+        this->_eventManager = eventManager;
     }
 }

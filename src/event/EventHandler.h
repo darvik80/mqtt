@@ -55,7 +55,7 @@ namespace mqtt {
     class EventHandlerWrapper : public TEventHandler<T> {
         std::function<void(const T &)> _handler;
     public:
-        explicit EventHandlerWrapper(std::function<void(const T &)> handler) : _handler(std::move(handler)) {
+        explicit EventHandlerWrapper(const std::function<void(const T &)> &&handler) : _handler(handler) {
         }
 
         void onEvent(const T &event) override {

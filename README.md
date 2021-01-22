@@ -42,5 +42,6 @@ MQTT Client v3.1 on C++ with boost::asio & signals
 ```
 
 ## TODO
-* Timeout for message responses
-* Resend messages with QoS > 0
+* Resend strategy for messages
+* Transform project to library
+* More integration tests

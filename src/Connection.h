@@ -11,7 +11,6 @@
 #include "Encoder.h"
 #include "Decoder.h"
 #include "Timer.h"
-#include <boost/signals2.hpp>
 #include "event/EventManager.h"
 
 namespace mqtt {
@@ -91,7 +90,7 @@ namespace mqtt {
 
         void stop();
 
-        void setEventManager(EventManager::Ptr eventManager);
+        void setEventManager(const EventManager::Ptr &eventManager);
     };
 }
 

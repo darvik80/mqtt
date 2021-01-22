@@ -25,7 +25,7 @@ namespace mqtt {
 
         std::unordered_set<Subscriber::Ptr> _subscribers;
     private:
-        DefaultClient(const Connection::Ptr &connection, EventManager::Ptr &eventManager);
+        DefaultClient(const Connection::Ptr &connection, const EventManager::Ptr &eventManager);
 
     public:
 
@@ -36,8 +36,7 @@ namespace mqtt {
 
         VoidFuture post(const message::Message::Ptr &msg) override;
 
-        Subscription subscribe(std::string_view topic, uint8_t qos,
-                               const std::function<void(const ByteBuffer &)> &callback) override;
+        Subscription subscribe(std::string_view topic, uint8_t qos, const DataCallback &&callback) override;
 
         Publisher publisher(std::string_view topic, uint8_t qos) override;
 

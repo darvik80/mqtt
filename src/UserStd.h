@@ -35,30 +35,26 @@ namespace mqtt {
     typedef boost::asio::signal_set SignalSet;
     typedef boost::asio::deadline_timer DeadlineTimer;
     typedef std::shared_ptr<DeadlineTimer> DeadlineTimerPtr;
-    typedef std::unique_ptr<DeadlineTimer> DeadlineTimerAutoPtr;
 
     // Time
     typedef boost::system::error_code ErrorCode;
     typedef boost::posix_time::ptime PosixTime;
     typedef boost::posix_time::time_duration PosixDuration;
     typedef boost::posix_time::seconds PosixSeconds;
+    typedef boost::posix_time::millisec PosixMilliseconds;
     typedef boost::posix_time::microseconds PosixMicroseconds;
 
     typedef boost::serialization::singleton<IoService> IoServiceHolder;
 
     typedef const std::function<void()> Runnable;
 
+    typedef std::function<void(const ByteBuffer &)> DataCallback;
+
     // Signals
     typedef boost::signals2::connection SignalConnection;
 
     typedef boost::promise<void> VoidPromise;
     typedef boost::future<void> VoidFuture;
-
-    typedef boost::promise<ErrorCode> ErrorPromise;
-    typedef boost::future<ErrorCode> ErrorFuture;
-
-    typedef boost::basic_lockable_adapter<boost::mutex> LockableAdapter;
-
 }
 
 

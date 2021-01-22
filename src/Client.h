@@ -20,7 +20,7 @@ namespace mqtt {
     public:
         virtual VoidFuture post(const message::Message::Ptr &msg) = 0;
 
-        virtual Subscription subscribe(std::string_view topic, uint8_t qos, const std::function<void(const ByteBuffer &)>& callback) = 0;
+        virtual Subscription subscribe(std::string_view topic, uint8_t qos, const DataCallback &&callback) = 0;
 
         virtual Publisher publisher(std::string_view topic, uint8_t qos) = 0;
 

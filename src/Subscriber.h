@@ -28,7 +28,7 @@ namespace mqtt {
     private:
         std::mutex _lock;
 
-        const std::function<void(const ByteBuffer &)> _callback;
+        DataCallback _callback;
         Command::Ptr _cmdSubscribe;
         Command::Ptr _cmdUnSubscribe;
 
@@ -36,8 +36,8 @@ namespace mqtt {
 
         TopicFilter _filter;
     private:
-        Subscriber(Client::Ptr client, std::string_view topic, uint8_t qos, const std::function<void(const ByteBuffer &)> &callback)
-                : _callback(callback), _client(client), _filter(topic) {
+        Subscriber(const Client::Ptr& client, std::string_view topic, uint8_t qos, DataCallback callback)
+                : _client(client), _filter(topic), _callback(std::move(callback)) {
             _cmdSubscribe = SubscribeCommand::create(client, topic, qos);
             _cmdUnSubscribe = UnSubscribeCommand::create(client, topic);
             MQTT_LOG(debug) << "[SUB] subscriber: " << _filter.getFilter() << " created";
