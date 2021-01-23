@@ -25,7 +25,7 @@ link_directories(
         /usr/local/lib
 )
 
-add_executable(mqtt ${SRCS_G})
+add_library(mqtt STATIC ${SRCS_G})
 
 target_link_libraries(mqtt ${Boost_LIBRARIES})
 
