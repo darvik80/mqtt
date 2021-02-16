@@ -1,6 +1,7 @@
 //
 // Created by Ivan Kishchenko on 26.09.2020.
 //
+#pragma once
 
 #ifndef MQTT_USERSTD_H
 #define MQTT_USERSTD_H
@@ -21,7 +22,6 @@
 #include <boost/thread/lockable_adapter.hpp>
 #include <boost/thread/strict_lock.hpp>
 #include <boost/thread/with_lock_guard.hpp>
-
 
 namespace mqtt {
     typedef std::vector<uint8_t> ByteBuffer;
@@ -56,6 +56,5 @@ namespace mqtt {
     typedef boost::promise<void> VoidPromise;
     typedef boost::future<void> VoidFuture;
 }
-
 
 #endif //MQTT_USERSTD_H

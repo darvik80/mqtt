@@ -17,6 +17,7 @@ include_directories(
 enable_testing()
 
 find_package(Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
+find_package(Threads REQUIRED)
 
 add_executable(mqtt_testsuite ${TEST_SRCS})
 
@@ -24,6 +25,7 @@ target_link_libraries(mqtt_testsuite PUBLIC
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+        pthread
         )
 
 add_test(NAME mqtt_testsuite WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND mqtt_testsuite)

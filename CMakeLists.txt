@@ -3,6 +3,10 @@ project(mqtt VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-type-limits -Wno-psabi")
+endif ()
+
 file(GLOB SRCS_G
         src/*.cpp
         src/message/*.cpp
@@ -28,6 +32,6 @@ link_directories(
 
 add_library(mqtt STATIC ${SRCS_G})
 
-target_link_libraries(mqtt ${Boost_LIBRARIES})
+target_link_libraries(mqtt ${Boost_LIBRARIES} pthread)
 
 add_subdirectory(testsuite)

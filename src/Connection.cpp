@@ -7,7 +7,6 @@
 #include <utility>
 #include "logging/Logger.h"
 #include <boost/lexical_cast.hpp>
-#include "exception/SystemException.h"
 
 using namespace boost;
 using namespace boost::asio;
