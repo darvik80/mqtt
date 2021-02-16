@@ -3,6 +3,7 @@
 //
 
 #include "PublishMessage.h"
+#include <cstring>
 
 namespace mqtt::message {
     PublishMessage::PublishMessage(std::string_view topic, uint16_t packetIdentifier)
@@ -46,12 +47,12 @@ namespace mqtt::message {
 
     void PublishMessage::setMessage(const uint8_t *message, size_t size) {
         _message.resize(size);
-        memcpy(_message.data(), message, size);
+        std::memcpy(_message.data(), message, size);
     }
 
     void PublishMessage::setMessage(const std::string &message) {
         _message.resize(message.size());
-        memcpy(_message.data(), message.c_str(), message.size());
+        std::memcpy(_message.data(), message.c_str(), message.size());
     }
 
 }
