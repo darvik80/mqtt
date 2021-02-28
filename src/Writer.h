@@ -6,7 +6,7 @@
 #define MQTT_WRITER_H
 
 #include <ostream>
-#include <boost/endian.hpp>
+#include <boost/endian/conversion.hpp>
 
 #include <string>
 #include <vector>

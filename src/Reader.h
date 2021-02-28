@@ -6,7 +6,7 @@
 #define MQTT_READER_H
 
 #include <istream>
-#include <boost/endian.hpp>
+#include <boost/endian/conversion.hpp>
 
 #define MQTT_INVALID_INT_VALUE -1;
 
